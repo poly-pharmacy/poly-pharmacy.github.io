@@ -639,6 +639,52 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
   const cover = document.querySelector(".cover");
   const opening = document.querySelector(".opening");
 
+  // ---- キーボード：Enter と → で次へ、← と Shift+Enter で前へ ----
+  // はじめの場面が画面の半分以上に見えているあいだは場面を送り（buildStage が introKeys を入れる）、
+  // それ以外は ノートの止まり位置（ページの頭、表紙、ひらいた目次）を順に送る
+  let introKeys = null, aim = null;   // aim：キーで送っている途中の行き先
+  addEventListener("wheel", () => { aim = null; }, { passive: true });
+  addEventListener("touchstart", () => { aim = null; }, { passive: true });
+  const inOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const turnPage = (dir) => {
+    const st = window.ScrollTrigger && ScrollTrigger.getAll().find((x) => x.trigger === opening);
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const top = (el) => el.getBoundingClientRect().top + scrollY;
+    // ページは、目次や番号札で飛んだときと同じ位置に止まる（Lenis は scroll-margin-top も足す）
+    const land = (el) => top(el) - 18 - (lenis ? parseFloat(getComputedStyle(el).scrollMarginTop) || 0 : 0);
+    const ix = document.querySelector(".index-page");
+    const raw = [0];
+    if (!root.classList.contains("stage-on")) document.querySelectorAll(".stage .scene").forEach((sc) => raw.push(top(sc)));   // 動きなしのときは、はじめの場面も1枚ずつ
+    raw.push(...(st ? [st.start + 1, st.end - 2] : [top(opening), ix ? top(ix) - 18 : top(opening)]));   // ピンの境目の内側で止まる
+    pages.forEach((pg) => raw.push(land(pg)));
+    const stops = [...new Set(raw.map((y) => Math.round(Math.max(0, Math.min(max, y)))))].sort((a, b) => a - b);
+    const now = aim !== null ? aim : scrollY;   // 送っている途中でもう一度押したら、その次へ
+    const y = dir > 0 ? stops.find((v) => v > now + 4) : stops.filter((v) => v < now - 4).pop();
+    if (y === undefined) return;
+    // 表紙がひらく（閉じる）ところをまたぐときは、めくれが見えるようにゆっくり
+    const a = Math.min(y, now), b = Math.max(y, now);
+    const book = st && a < st.start + (st.end - st.start) * 0.8 && b > st.start + 1;
+    aim = y;
+    const done = () => { if (aim === y) aim = null; };
+    if (lenis) lenis.scrollTo(y, Object.assign(book ? { duration: 1.6, easing: inOut } : { duration: 1.1 }, { onComplete: done }));
+    else { window.scrollTo({ top: y, behavior: motion ? "smooth" : "auto" }); setTimeout(done, motion ? 900 : 0); }
+  };
+  const onScreen = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight && getComputedStyle(el).visibility !== "hidden"; };
+  addEventListener("keydown", (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || e.repeat) return;
+    const enter = e.key === "Enter";
+    const dir = e.key === "ArrowRight" || (enter && !e.shiftKey) ? 1 : e.key === "ArrowLeft" || (enter && e.shiftKey) ? -1 : 0;
+    if (!dir) return;
+    if (enter) {
+      const t = e.target.closest ? e.target.closest("a, button, input, textarea, select, summary, [contenteditable]") : null;
+      if (t && onScreen(t)) return;   // 見えているボタンやリンクは、Enter でそれ自体を押す
+      if (t) t.blur();                // 画面の外に残ったフォーカス（押したあとの「ノートを開く」など）は外して、ページ送りに使う
+    }
+    e.preventDefault();
+    if (introKeys && introKeys(dir)) return;
+    turnPage(dir);
+  });
+
   // GSAP があれば、スクロール量に合わせて動かす：表紙のめくれと、読んだぶんだけ伸びる余白線
 
   // ---- 種（WebGL の点）：舞う種が「薬のアイデア」のロゴに集まり、電球が灯る。その光が紙になり、種は紺の粒になって落ちていく ----
@@ -1502,11 +1548,13 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
     skipBtn.addEventListener("click", () => openBook(false));
     let inView = true;
     new IntersectionObserver(([e]) => { inView = e.intersectionRatio > 0.5; }, { threshold: [0, 0.5, 1] }).observe(stageEl);
-    addEventListener("keydown", (e) => {
-      if (!inView || e.altKey || e.ctrlKey || e.metaKey) return;
-      if (e.key === "ArrowRight" || (e.key === "Enter" && e.target === document.body)) { e.preventDefault(); next(); }
-      else if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
-    });
+    // 本へ向かっている途中のキーは受け流す。場面が見えていなければ、ノートのページ送りに回す
+    introKeys = (dir) => {
+      if (booking) return true;
+      if (!inView) return false;
+      if (dir > 0) next(); else prev();
+      return true;
+    };
     $(".intro-ctrl").hidden = false;
     sync();
     return { tl };
@@ -1573,11 +1621,14 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
   };
   // いちばん下まで読んだら、短い最後のページでも番号を合わせる
   const atBottom = () => innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
-  const po = new IntersectionObserver((entries) => {
+  const pick = () => {
     if (atBottom()) { show(pages.length - 1); return; }
-    entries.forEach((e) => { if (e.isIntersecting) show(pages.indexOf(e.target)); });
-  }, { rootMargin: "-45% 0px -54% 0px" });
-  pages.forEach((p) => po.observe(p));
+    const line = innerHeight * 0.2;
+    let i = -1;
+    pages.forEach((pg, k) => { if (pg.getBoundingClientRect().top <= line) i = k; });
+    show(i);
+  };
+  pick();
   // 左下の番号札が、左端の縦書き見出しの上に重なるあいだは、札をよける（少し下がって消える）
   const kickers = [...document.querySelectorAll(".kicker")];
   let tuckRaf = 0;
@@ -1586,8 +1637,10 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
     const f = folio.getBoundingClientRect();
     folio.classList.toggle("tuck", kickers.some((k) => { const r = k.getBoundingClientRect(); return r.left < f.right && r.right > f.left && r.top < f.bottom + 8 && r.bottom > f.top - 8; }));
   };
-  addEventListener("scroll", () => { if (atBottom()) show(pages.length - 1); if (!tuckRaf) tuckRaf = requestAnimationFrame(tuck); }, { passive: true });
-  new IntersectionObserver(([e]) => { coverSeen = e.isIntersecting; sync(); }).observe(opening);
+  addEventListener("scroll", () => { if (!tuckRaf) tuckRaf = requestAnimationFrame(() => { pick(); tuck(); }); }, { passive: true });
+  addEventListener("resize", pick);
+  // 目次の下の端が画面の上に少し残っているだけなら、表紙はもう見ていないことにする（01 の頭でも札を出す）
+  new IntersectionObserver(([e]) => { coverSeen = e.isIntersecting; sync(); }, { rootMargin: "-12% 0px 0px 0px" }).observe(opening);
   document.querySelectorAll(".ix a").forEach((a) => a.addEventListener("click", (ev) => {
     const t = document.querySelector(a.getAttribute("href"));
     if (!t) return;
