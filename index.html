@@ -27,6 +27,7 @@
   --paper: #F6F3EA;
   --ink: #1B2D4F;
   --marker: #FFC93C;
+  --sky: linear-gradient(180deg, #1A54A8 0%, #3C86D3 58%, #CFE2EF 100%);   /* 最後の青空。WebGL が使えないときの代わりの空 */
   --ink-2: rgba(27, 45, 79, .72);
   --ink-3: rgba(27, 45, 79, .42);
   --line: rgba(27, 45, 79, .17);
@@ -122,6 +123,12 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 .circled svg { position: absolute; left: -2px; top: -6px; width: calc(100% + 4px); height: calc(100% + 12px); overflow: visible; pointer-events: none; }
 .circled path { fill: none; stroke: var(--ink); stroke-width: 1.5px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .proj + .proj { margin-top: 36px; padding-top: 22px; border-top: 1px dashed var(--ink-3); }
+/* いま取り組んでいること：番号の欄を罫で区切った、帳票の形 */
+.now { list-style: none; margin: 0 0 34px; padding: 0; border-top: 2px solid var(--ink); }
+.now li { display: grid; grid-template-columns: 34px minmax(0, 1fr); border-bottom: 1px solid var(--ink); }
+.now .n { grid-row: 1 / span 2; padding-top: 13px; border-right: 1px solid var(--ink); font: 700 13px/1.5 var(--mono); text-align: center; }
+.now b { padding: 10px 0 9px 12px; font: 900 18px/1.5 var(--mincho); }
+.now .d { padding: 0 0 11px 12px; margin-top: -5px; font-size: 14px; line-height: 1.7; color: var(--ink-2); }
 .loop { position: relative; margin: 16px 0 0; padding-right: 44px; }
 .loop ol { list-style: none; margin: 0; padding: 0; border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
 .loop li { display: grid; grid-template-columns: 26px minmax(0, 1fr); column-gap: 10px; padding: 11px 0 10px; }
@@ -168,66 +175,100 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
   .ruled p { font-size: 17px; }
   .ruled .turn { font-size: 21px; }
 }
-/* ================= はじめに：最初の数秒で目を引く。タップで場面が進む。紙・紺・黄の3色のまま ================= */
+/* ================= はじめに：最初の数秒で目を引く。タップで場面が進む ================= */
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
 .intro { position: relative; }
 .stage { position: relative; }
-.seeds, .sc-no, .rw-cap-b, .intro-ctrl { display: none; }
+.seeds, .sc-no, .rw-cap-b, .intro-ctrl, .halo, .flood, .ink, .sky, .sky-gl, .garden, .rain { display: none; }
 .scene { position: relative; padding: 14svh max(20px, 7vw); }
-.s-idea { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding-top: 0; padding-bottom: 0; }
-.sn-sub { position: absolute; top: 22px; left: max(20px, 7vw); margin: 0; font: 700 15px/1.5 var(--mincho); letter-spacing: .14em; }
-.sn-foot { position: absolute; left: max(20px, 7vw); bottom: 22px; margin: 0; font: 400 12px/1.6 var(--mono); color: var(--ink-2); }
-.sn-foot .who { display: block; margin-bottom: 6px; font: 900 18px/1 var(--mincho); letter-spacing: .14em; color: var(--ink); }
+/* 1枚目はロゴの場面。もとのロゴと同じ紺の地に、ロゴの色で描く */
+.s-idea { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 0; padding-bottom: 0; background: var(--ink); color: var(--paper); text-align: center; }
+.sn-sub { position: absolute; top: max(22px, calc(env(safe-area-inset-top) + 10px)); left: max(20px, 7vw, env(safe-area-inset-left)); margin: 0; font: 700 15px/1.5 var(--mincho); letter-spacing: .14em; text-align: left; }
+.sn-foot { position: absolute; left: max(20px, 7vw, env(safe-area-inset-left)); bottom: max(20px, calc(env(safe-area-inset-bottom) + 10px)); margin: 0; font: 400 11.5px/1.6 var(--mono); color: rgba(246, 243, 234, .7); text-align: left; }
+.sn-foot .who { display: block; margin-bottom: 6px; font: 900 18px/1 var(--mincho); letter-spacing: .14em; color: var(--paper); }
+.logo-fb img { display: block; width: min(30vw, 160px); height: auto; margin: 0 auto 2svh; }
+.idea-big { margin: 0; font: 900 min(17vw, 15svh)/1.14 var(--gothic); letter-spacing: .02em; }
+.idea-big .o { color: #F7A21B; }
+.sn-en { margin: 1.4svh 0 0; font: 700 clamp(11px, 3.2vw, 18px)/1 var(--gothic); letter-spacing: .32em; color: rgba(246, 243, 234, .82); }
 .big { margin: 0 0 4svh -.03em; font: 900 clamp(64px, 20vw, 220px)/1.14 var(--mincho); letter-spacing: .02em; font-feature-settings: "palt"; word-break: keep-all; }
-.idea-big { font-size: min(19.5vw, 17svh); }
-.aidea-big { font-size: min(27vw, 23svh); }
-.cap { margin: 0; max-width: 24em; font: 700 clamp(14px, 4vw, 22px)/1.8 var(--mincho); }
+.beat p { margin: 0; font: 900 min(clamp(28px, 9.2vw, 84px), 8.6svh)/1.42 var(--mincho); letter-spacing: .02em; font-feature-settings: "palt"; }
+.beat .beat-note { margin-top: 3svh; font: 700 clamp(14px, 4.2vw, 24px)/1.7 var(--mincho); }
+.beat.dark { background: var(--ink); color: var(--paper); }
+.beat.sky-beat { background: var(--sky); color: var(--paper); }
 .rw-cap { position: relative; margin: 0 0 14px; font: 700 12.5px/1.4 var(--gothic); letter-spacing: .24em; color: var(--ink-2); }
-.rw-line { margin: 0; font: 900 clamp(44px, 15vw, 150px)/1.22 var(--mincho); letter-spacing: .02em; }
+
+.rw-line { margin: 0; font: 900 min(clamp(44px, 15vw, 150px), 13svh)/1.22 var(--mincho); letter-spacing: .02em; }
 .rw-slot { position: relative; display: inline-block; white-space: nowrap; }
 .rw-old { position: relative; display: inline-block; }
 .rw-strike { position: absolute; left: -3%; top: 46%; width: 106%; height: .25em; overflow: visible; pointer-events: none; }
 .rw-strike path { fill: none; stroke: var(--ink); stroke-width: .055em; stroke-linecap: round; }
 .rw-new { display: block; white-space: nowrap; }
 .rw-foot { margin: 3svh 0 0; max-width: 21em; font: 700 clamp(13px, 3.9vw, 20px)/1.8 var(--mincho); }
-.manifesto p { margin: 0; font: 900 clamp(30px, 10vw, 96px)/1.32 var(--mincho); letter-spacing: .02em; font-feature-settings: "palt"; }
 .ic, .fc { display: inline-block; }
 
 /* 舞台の形（JSとGSAPが動くとき）：画面1枚の中で場面を重ね、タップで入れ替える */
-.stage-on .stage { height: 100svh; min-height: 560px; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
-.stage-on .seeds { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
-.stage-on .scene { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: center; padding: 0 max(20px, 7vw) 6svh; }
-.stage-on .s-aidea, .stage-on .rewrite, .stage-on .manifesto { visibility: hidden; opacity: 0; }
-.stage-on .sc-no { display: block; position: absolute; top: 24px; right: max(20px, 7vw); z-index: 3; margin: 0; font: 700 12px/1 var(--mono); letter-spacing: .06em; }
-.stage-on .sc-no .sc-of { font-weight: 400; color: var(--ink-2); }
+.stage-on .stage { height: 100svh; min-height: 560px; overflow: hidden; background: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+.stage-on .halo { display: block; position: absolute; z-index: 2; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 214, 120, .78) 0%, rgba(255, 186, 76, .42) 14%, rgba(255, 160, 52, .17) 34%, rgba(255, 150, 45, .05) 52%, rgba(255, 150, 45, 0) 68%); mix-blend-mode: screen; will-change: transform, opacity; }
+.stage-on .flood { display: block; position: absolute; inset: 0; z-index: 1; background: var(--paper); visibility: hidden; }
+.stage-on .ink { display: block; position: absolute; inset: 0; z-index: 3; background: var(--ink); transform: scaleY(0); transform-origin: 50% 100%; }
+.stage-on .seeds { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; }
+/* 物語の背景：地面の線、一粒の種、雨、芽、太陽、青空、ひまわり。線はすべてペンで描いた線として扱う */
+.stage-on .sky { display: block; position: absolute; left: 0; right: 0; top: 0; height: var(--hz, 80%); z-index: 3; background: var(--sky); visibility: hidden; }
+.stage-on .sky-gl { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+.stage-on .garden { display: block; position: absolute; inset: 0; z-index: 4; color: var(--ink); pointer-events: none; visibility: hidden; }
+.stage-on .rain { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
+.g-ground { position: absolute; left: 0; right: 0; top: var(--hz, 80%); height: 1.5px; margin-top: -.75px; background: currentColor; transform: scaleX(0); transform-origin: 0 50%; }
+.g-plant, .g-sun { position: absolute; left: 0; top: 0; overflow: visible; }
+.g-plant path, .g-sun path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.gp-stem, .gp-mound, .gs-rays path { stroke-dasharray: 100 120; stroke-dashoffset: 101; }   /* すき間を線の長さより長くとり、丸い線端が点になって残らないようにする */
+.g-plant .gp-seed, .g-plant .gp-sd { fill: currentColor; stroke: none; opacity: 0; }
+.g-plant .gp-pt path { fill: var(--marker); stroke-width: 1.3; }
+.gp-disc { fill: currentColor; }
+.gp-dots circle { fill: var(--paper); }
+.g-sun .gs-disc { fill: var(--marker); stroke-width: 1.6; }
+.stage-on .sky-beat { color: var(--ink); }
+.stage-on .beat.dark, .stage-on .beat.sky-beat { justify-content: flex-end; padding-bottom: calc(var(--gb, 20svh) + 6svh); }
+.stage-on .beat.dark p { font-size: clamp(20px, 5.8vw, 46px); letter-spacing: .08em; }
+.stage-on .beat.sky-beat { padding-bottom: calc(var(--gb, 20svh) + 13svh); }   /* 葉の高さより上に置く */
+.stage-on .beat.sky-beat p { font-size: clamp(22px, 7vw, 60px); }
+.stage-on .scene { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; justify-content: center; padding: 0 max(20px, 7vw) 6svh; }
+.stage-on .scene:not(.s-idea) { padding-bottom: calc(var(--gb, 20svh) + 3svh); }   /* 物語の文字は、地平線より上の中で真ん中に置く */
+.stage-on .s-idea { background: none; align-items: center; padding-bottom: 0; }
+.stage-on .beat, .stage-on .rewrite { visibility: hidden; opacity: 0; }
+.stage-on .beat.dark, .stage-on .beat.sky-beat { background: none; }
+.stage-on .sn-en { position: absolute; left: 0; right: 0; top: 0; margin: 0; opacity: 0; }
+.seeds-on .logo-fb { visibility: hidden; }
+.seeds-off .sn-en { position: static; margin: 1.4svh 0 0; }
+.stage-on .sc-no { display: block; position: absolute; top: max(24px, calc(env(safe-area-inset-top) + 12px)); right: max(20px, 7vw, env(safe-area-inset-right)); z-index: 6; margin: 0; font: 700 12px/1 var(--mono); letter-spacing: .06em; color: var(--paper); }
+.stage-on .sc-no .sc-of { font-weight: 400; color: rgba(246, 243, 234, .6); }
 .stage-on .rw-new { position: absolute; left: 0; top: 0; }
 .stage-on .rw-cap-b { display: inline; position: absolute; left: 0; top: 0; opacity: 0; }
 .stage-on .rw-strike path { stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0; }
-.stage-on .intro-ctrl { display: flex; position: absolute; right: max(14px, 5vw); bottom: 18px; z-index: 4; flex-direction: column; align-items: flex-end; gap: 8px; cursor: default; }
+.stage-on .intro-ctrl { display: flex; position: absolute; right: max(14px, 5vw, env(safe-area-inset-right)); bottom: max(18px, calc(env(safe-area-inset-bottom) + 8px)); z-index: 7; flex-direction: column; align-items: flex-end; gap: 8px; cursor: default; }
 .stage-on .intro-ctrl[hidden] { display: none; }
-.intro-hint { margin: 0; font: 700 11px/1 var(--mono); letter-spacing: .14em; color: var(--ink-2); }
+.intro-hint { margin: 0; font: 700 11px/1 var(--mono); letter-spacing: .14em; color: rgba(246, 243, 234, .75); }
 .intro-hint .mouse { display: none; }
 @media (hover: hover) and (pointer: fine) { .intro-hint .mouse { display: inline; } .intro-hint .touch { display: none; } }
 .ic-btns { display: flex; border: 1px solid var(--ink); background: var(--paper); }
 .ic-btns button { padding: 10px 12px 9px; border: 0; background: none; color: var(--ink); font: 700 12px/1 var(--mono); letter-spacing: .06em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ic-btns button + button { border-left: 1px solid var(--ink); }
-.stage-on .sn-foot { bottom: 20px; right: auto; }
-.stage-on .big { color: transparent; }
-.seeds-off .big { color: var(--ink); }
+.ic-btns button[hidden] { display: none; }
 @media (min-width: 720px) {
-  .sn-sub { top: 30px; font-size: 17px; }
-  .sn-foot { bottom: 30px; }
-  .stage-on .sc-no { top: 32px; }
-  .stage-on .intro-ctrl { bottom: 26px; }
-  .idea-big { font-size: min(12.5vw, 26svh); }
-  .aidea-big { font-size: min(19vw, 34svh); }
+  .sn-sub { top: max(30px, calc(env(safe-area-inset-top) + 12px)); font-size: 17px; }
+  .sn-foot { bottom: max(28px, calc(env(safe-area-inset-bottom) + 12px)); }
+  .stage-on .sc-no { top: max(32px, calc(env(safe-area-inset-top) + 14px)); }
+  .stage-on .intro-ctrl { bottom: max(26px, calc(env(safe-area-inset-bottom) + 10px)); }
+  .idea-big { font-size: min(9vw, 15svh); }
 }
 
 /* ---- 本の形（GSAPが動くときだけ）：画面いっぱいの表紙を、スクロールで背を軸にひらく ---- */
 .book .note { padding-top: 0; }
 .book .opening { height: 100svh; min-height: 560px; max-height: 1000px; perspective: 2400px; perspective-origin: 45% 40%; }
+.book .tome { position: absolute; inset: 0; transform-style: preserve-3d; }
 .book .cover, .book .index-page { position: absolute; top: 14px; bottom: 14px; left: 0; right: 0; margin: 0; }
+.held .hint { visibility: hidden; }   /* 本を持っている間は「スクロールでひらく」を出さない（自動でひらくため） */
 .book .cover { z-index: 2; transform-origin: 0% 50%; transform-style: preserve-3d; }
 .book .front, .book .back { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 .book .front { display: flex; flex-direction: column; padding-top: 17vh; }
@@ -245,6 +286,8 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 /* ページ番号（ノンブル）。ページが変わると数字が回る。タップで次のページへ */
 .folio { position: fixed; left: max(10px, env(safe-area-inset-left), calc((100vw - 680px) / 2 + 10px)); bottom: max(12px, env(safe-area-inset-bottom)); z-index: 10; display: flex; flex-direction: column; align-items: center; width: 34px; padding: 6px 0 5px; background: var(--paper); border: 1px solid var(--ink); color: var(--ink); text-decoration: none; font: 700 13px/1 var(--mono); letter-spacing: .04em; opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity .3s, transform .3s; -webkit-tap-highlight-color: transparent; }
 .folio[hidden] { display: none; }
+/* はじめの場面の終わり：空の光が紙になって、手元の本に切りかわる（スクロールで流さない） */
+.veil { position: fixed; inset: 0; z-index: 60; background: var(--paper); opacity: 0; visibility: hidden; pointer-events: none; }
 .folio.on { opacity: 1; transform: none; pointer-events: auto; }
 .folio-no { position: relative; display: inline-block; width: 2ch; height: 1.1em; overflow: hidden; }
 .folio-no span { position: absolute; left: 0; top: 0; line-height: 1.1em; }
@@ -314,26 +357,53 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 <body>
 <section class="intro" aria-label="はじめに">
  <div class="stage">
+  <div class="halo" aria-hidden="true"></div>
+  <div class="flood" aria-hidden="true"></div>
+  <div class="ink" aria-hidden="true"></div>
+  <div class="sky" aria-hidden="true"></div>
+  <canvas class="sky-gl" aria-hidden="true"></canvas>
+  <div class="garden" aria-hidden="true">
+    <i class="g-ground"></i>
+    <svg class="g-sun" viewBox="-60 -60 120 120" focusable="false"><g class="gs-rays"><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(0)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(30)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(60)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(90)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(120)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(150)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(180)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(210)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(240)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(270)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(300)"/><path pathLength="100" d="M0 -33 L0 -45" transform="rotate(330)"/></g><path class="gs-disc" d="M0 -24 C 13.5 -24.5, 24.6 -13, 24 0.8 C 23.6 13.8, 12.6 24.4, -0.6 24 C -13.8 23.6, -24.3 12.8, -24 -0.6 C -23.7 -13.4, -13.2 -23.6, 0 -24 Z"/></svg>
+    <svg class="g-plant" viewBox="0 0 120 330" focusable="false">
+      <path class="gp-mound" pathLength="100" d="M49 300 C 54 295.5, 66 295.5, 71 300"/>
+      <path class="gp-seed" d="M60 303.5 C 65.4 307.5, 65.4 314.5, 60 318.5 C 54.6 314.5, 54.6 307.5, 60 303.5 Z"/>
+      <path class="gp-stem" pathLength="100" d="M60 300 C 58 262, 63 226, 60 190 S 56 120, 61 74"/>
+      <g class="gp-coty"><path d="M60 281 C 52 268, 38 266, 31 273 C 37 283, 51 285, 60 281 Z"/><path d="M60 281 C 68 268, 82 266, 89 273 C 83 283, 69 285, 60 281 Z"/></g>
+      <path class="gp-leaf" pathLength="100" d="M60 224 C 47 205, 21 204, 12 216 C 23 233, 47 235, 60 224 M60 224 C 46 220, 34 218, 22 217"/>
+      <path class="gp-leaf" pathLength="100" d="M60.5 170 C 73.5 151, 99.5 150, 108.5 162 C 97.5 179, 73.5 181, 60.5 170 M60.5 170 C 74.5 166, 86.5 164, 98.5 163"/>
+      <g class="gp-tipat"><g class="gp-tip"><path d="M0 0 C -6.5 -5, -7.5 -13.5, -1.2 -19 C 1 -11.5, 1 -5, 0 0 Z"/><path d="M0 0 C 6.5 -5, 7.5 -13.5, 1.2 -19 C -1 -11.5, -1 -5, 0 0 Z"/></g></g>
+      <g class="gp-head">
+      <g class="gp-petals"><g class="gp-pt"><path transform="rotate(6.0 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(31.7 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(57.4 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(83.1 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(108.9 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(134.6 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(160.3 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(186.0 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(211.7 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(237.4 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(263.1 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(288.9 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(314.6 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g><g class="gp-pt"><path transform="rotate(340.3 61 66)" d="M61 53 C 66.5 45, 66 35, 61 28.5 C 56 35, 55.5 45, 61 53 Z"/></g></g>
+      <circle class="gp-disc" cx="61" cy="66" r="13.5"/>
+      <g class="gp-dots"><circle cx="58.4" cy="68.4" r="1.05"/><circle cx="61.4" cy="61.1" r="1.05"/><circle cx="64.7" cy="70.8" r="1.05"/><circle cx="54.1" cy="64.8" r="1.05"/><circle cx="67.6" cy="61.8" r="1.05"/><circle cx="58.8" cy="74.3" r="1.05"/><circle cx="56.7" cy="57.8" r="1.05"/><circle cx="70.3" cy="69.4" r="1.05"/><circle cx="51.3" cy="70.0" r="1.05"/><circle cx="65.7" cy="56.0" r="1.05"/></g></g>
+      <g class="gp-fall"><path class="gp-sd" d="M61 58.5 C 66.4 62.5, 66.4 69.5, 61 73.5 C 55.6 69.5, 55.6 62.5, 61 58.5 Z"/><path class="gp-sd" d="M61 58.5 C 66.4 62.5, 66.4 69.5, 61 73.5 C 55.6 69.5, 55.6 62.5, 61 58.5 Z"/><path class="gp-sd" d="M61 58.5 C 66.4 62.5, 66.4 69.5, 61 73.5 C 55.6 69.5, 55.6 62.5, 61 58.5 Z"/><path class="gp-sd" d="M61 58.5 C 66.4 62.5, 66.4 69.5, 61 73.5 C 55.6 69.5, 55.6 62.5, 61 58.5 Z"/></g>
+    </svg>
+  </div>
   <canvas class="seeds" aria-hidden="true"></canvas>
-  <p class="sc-no" aria-hidden="true"><span class="sc-cur">01</span><span class="sc-of">／04</span></p>
+  <canvas class="rain" aria-hidden="true"></canvas>
+  <p class="sc-no" aria-hidden="true"><span class="sc-cur">01</span><span class="sc-of">／09</span></p>
   <div class="scene s-idea">
     <p class="sn-sub">気づきの種を育てる</p>
-    <p class="big idea-big"><span class="nb">薬の</span><wbr><span class="nb">アイデア</span></p>
+    <div class="logo-fb"><img src="data:image/webp;base64,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" alt="" width="96" height="96"><p class="idea-big"><span class="nb">薬の</span><span class="nb o">アイデア</span></p></div>
+    <p class="sn-en">MEDICINE &amp; IDEAS</p>
     <h1 class="sn-foot"><span class="who">ねむ</span>田舎の薬学部で学ぶ薬学生</h1>
   </div>
-  <div class="scene s-aidea">
-    <p class="big aidea-big">AIデア</p>
-    <p class="cap">AIの提案をヒントに生まれた種を、<br>「AIデア」と呼んでいます。</p>
-  </div>
+  <div class="scene beat" data-fx="ground"><p>本気で<br>薬剤師をめざそうと<br>決めたのは、<br>中学生のとき。</p></div>
+  <div class="scene beat"><p>大好きな<br>おばあちゃんが、<br>肺がんで<br>入院しました。</p><p class="beat-note">会うといつも笑顔で、<br>つらそうな様子を一度も見せませんでした。</p></div>
+  <div class="scene beat" data-fx="seed"><p>好きなスイカを<br>持っていくと、<br>とてもうれしそうに<br>食べてくれました。</p></div>
+  <div class="scene beat dark" data-fx="rain"><p>次の週、<br>おばあちゃんは<br>亡くなりました。</p></div>
+  <div class="scene beat" data-fx="drizzle"><p>勝手に<br>よくなっていると<br>思い込んでいた。</p><p class="beat-note">何もできなかった自分が、悔しかった。</p></div>
   <div class="scene rewrite">
-    <p class="rw-cap"><span class="rw-cap-a">子どもの頃の夢</span><span class="rw-cap-b">いま、めざしていること</span></p>
+    <p class="rw-cap"><span class="rw-cap-a">あの日からの夢</span><span class="rw-cap-b">いま、めざしていること</span></p>
     <p class="rw-line"><span class="rw-a">薬剤師＝</span><br><span class="rw-slot"><span class="rw-old">薬を作る人<svg class="rw-strike" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="100" d="M1 6 C 20 3, 38 7, 55 5 S 86 3, 99 5"/></svg></span><span class="rw-new"><mark>気づける人</mark></span></span></p>
-    <p class="rw-foot">学ぶうちに、薬剤師の役目は薬を作ることだけではないと知りました。</p>
+    <p class="rw-foot">つらさを口に出さない人の、<br>小さな変化にも気づけるように。</p>
   </div>
-  <div class="scene manifesto"><p>気づける。</p><p>現場を楽にする。</p><p>変化に強い。</p></div>
+  <div class="scene beat" data-fx="sun"><p>周りに<br>助けられて、<br>ここまで来ました。</p></div>
+  <div class="scene beat sky-beat" data-fx="bloom"><p>今度は、自分が<br>誰かの力になる番。</p></div>
   <div class="intro-ctrl" hidden>
     <p class="intro-hint" aria-hidden="true"><span class="touch">タップで次へ</span><span class="mouse">クリックで次へ</span></p>
-    <div class="ic-btns"><button type="button" class="ic-next">次へ ▸</button><button type="button" class="ic-skip">ノートへ ▸▸</button></div>
+    <div class="ic-btns"><button type="button" class="ic-next">次へ ▸</button><button type="button" class="ic-skip">飛ばす ▸▸</button></div>
   </div>
  </div>
 </section>
@@ -341,6 +411,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 <div class="note">
 
 <div class="opening">
+<div class="tome">
 <span class="spine" aria-hidden="true"></span>
 <header class="cover">
  <div class="front">
@@ -359,18 +430,19 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 </header>
 
 <nav class="index-page" aria-label="目次">
-  <div class="ix-head"><h2 class="ix-title">目次</h2><p class="dateline">2026.11.19（木）更新</p></div>
+  <div class="ix-head"><h2 class="ix-title">目次</h2><p class="dateline">2026.11.20（金）更新</p></div>
   <ol class="ix">
     <li><a href="#p01"><span class="n">01</span><span class="t"><span class="nb">まず調べて、</span><wbr><span class="nb">作ってみる</span></span><span class="k">自己紹介</span></a></li>
     <li><a href="#p02"><span class="n">02</span><span class="t">あの日のスイカ</span><span class="k">きっかけ</span></a></li>
     <li><a href="#p03"><span class="n">03</span><span class="t"><span class="nb">気づける。</span><wbr><span class="nb">現場を楽にする。</span><wbr><span class="nb">変化に強い。</span></span><span class="k">めざす方向</span></a></li>
-    <li><a href="#p04"><span class="n">04</span><span class="t"><span class="nb">AIと一緒に、</span><wbr><span class="nb">種を育てる</span></span><span class="k">取り組み</span></a></li>
+    <li><a href="#p04"><span class="n">04</span><span class="t"><span class="nb">研究と、</span><wbr><span class="nb">国試と、</span><wbr><span class="nb">アプリづくり</span></span><span class="k">取り組み</span></a></li>
     <li><a href="#p05"><span class="n">05</span><span class="t"><span class="nb">捨てない。</span><wbr><span class="nb">確かめる。</span><wbr><span class="nb">小さく始める。</span></span><span class="k">大事なこと</span></a></li>
     <li><a href="#p06"><span class="n">06</span><span class="t"><span class="nb">まだ決めていない。</span><wbr><span class="nb">でも、それでいい</span></span><span class="k">これから</span></a></li>
     <li><a href="#p07"><span class="n">07</span><span class="t"><span class="nb">話しかけてもらえると</span><wbr><span class="nb">うれしいです</span></span><span class="k">連絡先</span></a></li>
   </ol>
   <p class="ix-foot">全7ページ</p>
 </nav>
+</div>
 </div>
 
 <main>
@@ -411,8 +483,13 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
   </section>
 
   <section class="page p04" id="p04" aria-labelledby="h04">
-    <div class="pg-head"><span class="no">04</span><h2 id="h04"><span class="nb">AIと一緒に、</span><wbr><span class="nb">種を育てる</span></h2></div>
+    <div class="pg-head"><span class="no">04</span><h2 id="h04"><span class="nb">研究と、</span><wbr><span class="nb">国試と、</span><wbr><span class="nb">アプリづくり</span></h2></div>
     <div class="pg-body"><p class="kicker">いま取り組んでいること</p>
+      <ol class="now">
+        <li><span class="n">1</span><b>有機化学の卒業研究</b></li>
+        <li><span class="n">2</span><b>国家試験に向けた勉強</b></li>
+        <li><span class="n">3</span><b>AIを活用したアプリ開発</b><span class="d">いま作っているのは、次の二つです。</span></li>
+      </ol>
       <div class="proj">
         <h3><span class="ord">一つ目</span>薬のアイデア帳</h3>
         <p>最初の挑戦は、AIと一緒にアイデアを育てる、自分用のアプリづくりです。AIの提案をヒントに生まれた種を、<span class="circled">「AIデア」<svg viewBox="0 0 120 44" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="100" d="M104 7 C 82 0, 28 1, 11 11 C -3 20, 5 36, 31 40 C 59 45, 106 41, 115 27 C 121 17, 109 7, 84 5"/></svg></span>と呼んでいます。</p>
@@ -543,40 +620,82 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 
   // GSAP があれば、スクロール量に合わせて動かす：表紙のめくれと、読んだぶんだけ伸びる余白線
 
-  // ---- 種（WebGL の点）：舞う種が「薬のアイデア」の字に集まり、「AIデア」へ組み替わり、落ちていく ----
-  const createSeeds = (canvas, words) => {
-    const gl = canvas.getContext("webgl", { antialias: true, alpha: true, premultipliedAlpha: false });
+  // ---- 種（WebGL の点）：舞う種が「薬のアイデア」のロゴに集まり、電球が灯る。その光が紙になり、種は紺の粒になって落ちていく ----
+  const LOGO = { w: 325, h: 210, bulb: [197.07, 62.46, 42.48], rle: "325.|325.|325.|150.3s172.|150.3s1w171.|150.3s1w171.|150.3s1w30.3r138.|151.2w30.4r23.4r111.|183.5r22.4r111.|134.2s47.5r21.5r111.|134.2s47.5r21.5r111.|133.3s48.4r21.5r111.|133.4s47.5r19.5r112.|132.6s46.5r19.5r112.|130.9s45.5r19.5r112.|128.14s42.5r19.5r112.|127.14s2w42.4r18.5r113.|130.9s1w45.4r19.4r113.|131.7s70.3r114.|132.5s23.3r162.|133.3s1w23.4r70.3r88.|134.2s23.6r67.5r88.|134.2s24.6r66.5r14.2s1n71.|134.1w26.6r64.6r13.5s1n69.|162.6r62.6r14.5s1n69.|163.6r60.6r14.7s69.|163.7r22.10g26.6r16.5s1n69.|164.6r18.19g20.6r17.1n4s1n69.|166.3r16.25g17.5r19.1n2s1n70.|183.29g16.3r94.|181.33g111.|179.37g109.|109.13b56.39g108.|107.18b51.14g10h19g106.|105.22b48.12g14h19g105.|103.26b45.11g16h20g104.|102.28b43.10g18h21g103.|101.31b40.10g18h23g102.|100.32b39.10g10h1n32g101.|99.34b37.9g9h1n36g100.|98.36b36.8g8h1n38g1f99.|97.38b12.2r20.8g8h41g99.|97.38b11.6r16.8g7h44g98.|96.8b2w30b10.10r12.7g1n6h45g19.4r75.|96.7b4w30b9.11r10.8g6h1n46g14.9r74.|95.7b5w30b9.12r9.7g6h1n47g11.12r74.|95.7b5w31b11.9r8.8g6h49g10.11r75.|95.6b5w32b14.5r9.7g6h50g9.10r1s76.|94.7b4w34b27.7g5h20g3f29g9.7r79.|94.6b5w34b26.8g1n4h19g6f27g9.3r83.|94.6b5w35b25.9g1n1h1n20g6f27g95.|94.6b4w36b25.32g6f27g1f94.|94.6b4w37b23.33g6f28g94.|94.6b4w37b23.25g1f6g6f29g94.|94.6b4w38b22.24g6f2g6f29g94.|94.6b4w38b22.23g15f29g94.|94.6b4w39b21.23g15f29g94.|94.6b4w39b21.23g17f27g94.|94.6b5w39b20.23g21f23g1f93.|94.7b4w40b19.25g20f23g93.|95.6b5w39b19.29g16f23g93.|95.7b4w40b18.30g14f23g1f93.|95.7b5w39b18.30g14f23g1f93.|96.7b4w40b17.29g7f3g5f23g94.|96.7b5w39b17.29g6f32g94.|97.7b5w39b16.29g6f32g94.|97.7b5w39b16.28g7f32g94.|98.7b4w40b15.28g6f33g94.|98.7b5w39b16.28g5f32g1f8.3s3r80.|99.7b4w40b15.16g3f11g2f33g8.1f3s7r76.|99.7b5w37b17.16g4f45g9.11r75.|100.7b4w35b19.16g4f45g9.5r2s5r74.|84.1w2s1w12.7b4w33b22.15g4f44g12.3r7s74.|84.3s1w13.7b3w32b23.16g3f44g16.5s75.|84.3s1w13.40b10.2w14.15g4f42g97.|84.3w15.37b10.5w13.15g4f16g3f23g97.|102.35b10.7w14.14g4f15g5f21g98.|103.8b4w20b10.10w13.14g4f14g5f22g98.|103.8b4w19b9.12w14.13g4f13g5f22g99.|104.7b5w16b9.15w13.13g4f13g5f21g100.|105.7b4w14b10.16w13.13g4f12g5f22g100.|105.7b3w13b10.19w13.12g4f11g5f22g101.|106.20b10.21w13.12g4f10g5f22g102.|106.18b10.24w12.12g4f10g4f22g103.|107.15b10.26w13.11g4f9g5f21g104.|107.14b9.29w12.10g4f10g4f21g105.|73.3w32.11b9.31w12.10g5f8g5f20g106.|72.4s1w31.9b10.33w11.10g4f8g5f20g11.2f94.|71.1w5s1w31.6b10.36w10.10g4f8g4f19g12.1s1f2s23.3n67.|71.1w5s1w31.4b10.38w10.10g4f7g5f18g13.5s21.1n2s1n67.|71.1w5s1w32.1b10.41w9.10g4f7g4f17g15.4s2r20.1n3s67.|72.1w3s1w42.43w9.9g5f6g5f15g18.3s3r19.4s67.|73.3w41.45w1n8.9g5f6g5f14g20.6r19.2n68.|115.47w1s7.1f9g4f6g5f13g1f22.6r88.|114.48w1s1n6.1f8g5f6g5f12g24.7r87.|112.50w2s7.8g5f6g4f12g26.6r87.|113.49w2s1n6.8g4f6g5f11g28.5r87.|113.49w2s1n7.1f6g4f6g5f10g1f30.2r88.|95.1w18.48w2s2n9.1f2g5f6g4f11g121.|95.1s1w17.48w4n13.4f5g5f10g122.|95.1s1w18.47w4n16.6g5f10g122.|94.3s18.47w5n18.1f2g4f10g123.|93.4s1w18.46w5n22.3f10g123.|93.5s1w18.45w5n5.4n16.1f8g124.|91.9s17.45w5n5.7n16.1f4g125.|88.14s1w15.44w5n6.10n142.|88.1w13s2w14.44w5n6.13n139.|91.1w8s1w18.43w6n5.16n136.|92.6s1w20.43w6n6.19n26.1n1s2n102.|93.1w3s1w22.42w5n10.19n22.1n4s1n101.|94.1w1s2w22.42w5n14.16n21.5s1n101.|94.1w1s1w24.41w5n17.14n19.3n3s1n101.|95.1s1w24.41w5n5.1n14.11n20.2n1s1n1s1n13.4n84.|95.1w26.40w5n5.4n15.6n21.2n2s2n13.1n2s1n84.|122.40w4n6.8n14.2n24.2n15.1n2s1n84.|123.39w4n5.12n54.4n84.|123.39w4n5.15n139.|124.38w3n6.19n135.|125.37w3n9.19n132.|125.37w2n13.18n130.|126.36w1n1b17.14n130.|127.35w1n21.11n130.|127.35w9.1n15.8n130.|128.33w10.4n16.2n132.|129.31w11.8n146.|131.28w13.10n143.|132.26w15.13n139.|133.23w17.13n139.|135.19w21.10n140.|138.13w26.5n143.|144.1w180.|325.|325.|325.|325.|325.|325.|325.|325.|325.|325.|325.|325.|325.|325.|325.|325.|24.3t19.3t276.|22.7t15.7t274.|22.8t14.8t273.|22.8t13.9t273.|11.52t262.|10.54t139.6o116.|9.55t61.36o41.9o13.24o5.3o4.3o10.37o15.|9.55t60.39o39.9o11.27o4.4o3.4o8.40o13.|9.55t59.41o37.10o11.27o4.4o3.4o7.42o12.|9.55t59.42o35.11o10.29o3.4o3.4o7.43o11.|10.53t26.11t23.43o34.11o10.29o3.4o3.4o7.43o11.|21.9t13.9t34.17t20.43o33.11o11.29o3.4o3.4o7.43o11.|22.8t13.9t32.21t18.43o32.12o11.28o4.4o3.4o7.44o10.|22.7t4.6t5.7t31.25t16.43o31.12o13.27o4.4o3.4o8.43o10.|24.3t6.7t6.3t32.27t16.42o30.12o15.25o5.3o4.3o10.42o10.|13.3t16.8t16.4t19.30t46.11o30.12o96.11o10.|12.6t13.9t15.6t17.32t46.10o29.12o98.10o10.|11.8t7.21t7.8t15.34t45.10o28.12o99.10o10.|11.9t5.23t5.9t15.35t44.10o27.12o100.9o11.|11.10t4.24t3.10t14.12t1.8t3.12t44.10o26.13o99.10o11.|11.10t3.25t3.10t13.11t3.8t5.11t42.10o26.13o100.10o11.|12.10t2.25t2.10t14.10t4.8t6.10t42.10o24.14o101.10o11.|14.7t3.8t9.8t2.9t14.10t5.8t7.10t24.5o11.11o23.14o84.6o11.10o12.|15.6t3.8t9.8t3.7t15.9t6.8t8.9t23.7o10.10o23.14o20.41o23.8o9.11o12.|16.3t5.25t4.4t16.10t6.8t8.9t22.9o8.11o22.14o20.43o22.9o8.10o13.|24.25t24.9t7.8t8.9t22.9o7.11o21.16o20.43o21.10o7.11o13.|20.1t3.25t4.1t19.9t7.8t9.9t21.9o6.12o20.17o19.45o20.10o6.11o14.|18.4t2.25t2.6t16.8t8.8t9.9t21.9o5.12o19.19o19.45o20.10o5.12o14.|15.8t1.25t1.9t13.9t8.8t9.9t21.9o4.12o18.21o19.45o20.10o4.12o15.|13.10t1.8t9.8t1.10t12.9t8.8t9.9t21.9o4.12o17.22o20.43o21.10o3.12o16.|11.21t9.8t1.12t10.8t8.9t10.8t21.9o3.12o16.24o20.43o21.10o3.11o17.|10.13t1.8t9.8t1.13t9.8t8.9t10.8t21.9o3.11o14.27o22.40o22.10o3.11o17.|9.14t1.25t2.12t9.8t8.8t11.8t20.10o3.10o14.28o38.10o36.10o3.10o18.|9.12t4.24t4.11t8.8t8.8t11.8t20.10o3.9o14.17o3.9o38.10o36.10o3.9o19.|10.9t6.24t5.9t9.8t8.8t11.8t20.10o4.7o15.16o4.9o38.10o36.9o4.8o20.|10.7t8.23t8.7t9.8t8.8t10.9t20.10o4.6o16.14o6.9o38.10o36.9o5.5o22.|11.4t12.20t10.4t11.8t7.9t10.9t20.9o7.2o18.13o7.9o38.10o35.10o7.1o24.|32.9t31.8t7.8t11.9t19.10o27.11o9.9o37.11o35.10o32.|32.9t31.8t7.8t11.9t19.10o27.9o11.9o37.10o36.10o32.|32.9t31.8t7.8t10.10t19.10o28.6o13.9o37.10o35.10o33.|10.53t9.9t5.9t10.9t19.10o31.1o16.9o36.11o35.10o33.|9.55t8.9t5.8t11.9t19.10o48.9o35.11o35.11o33.|9.55t9.9t3.9t10.10t18.10o49.9o34.12o35.10o34.|9.55t9.21t9.10t18.11o49.9o33.13o34.11o34.|9.55t9.20t9.11t17.12o49.9o32.13o34.11o35.|10.53t11.19t8.12t16.12o50.9o30.14o34.12o35.|24.26t24.18t6.14t16.12o51.9o28.16o32.13o36.|23.28t24.17t4.15t15.14o51.9o25.18o31.14o37.|21.32t23.15t5.15t13.15o52.9o23.19o30.16o37.|18.37t21.14t5.15t13.15o53.9o22.19o30.16o38.|16.15t1.9t2.15t20.11t6.14t14.14o54.9o22.18o31.15o39.|13.17t2.9t3.17t18.9t7.13t14.14o55.9o22.17o32.14o40.|10.18t4.9t4.18t19.3t10.11t16.13o56.9o22.15o34.13o41.|9.18t5.9t6.17t32.9t17.12o57.9o22.14o35.12o42.|9.16t7.9t7.16t33.6t20.10o58.9o22.12o37.10o44.|10.13t9.9t9.13t60.8o60.9o23.8o41.8o45.|11.10t11.9t11.10t62.5o62.9o24.4o44.6o47.|12.7t14.8t13.7t131.7o126.|13.3t17.7t17.3t265.|35.3t287.|325.|325.|325." };
+  const KIND = { b: 1, w: 2, g: 3, h: 4, f: 5, n: 6, r: 7, s: 8, t: 9, o: 10 };
+  const COLOR = { 1: [0.30, 0.56, 0.82], 2: [0.95, 0.96, 0.97], 3: [1.0, 0.83, 0.30], 4: [1.0, 0.98, 0.90], 5: [0.97, 0.55, 0.16], 6: [0.70, 0.74, 0.79], 7: [1.0, 0.62, 0.12], 8: [1.0, 0.91, 0.55], 9: [0.97, 0.97, 0.97], 10: [0.97, 0.64, 0.11] };
+  const decodeLogo = () => {
+    const cells = [];
+    LOGO.rle.split("|").forEach((row, y) => {
+      let x = 0;
+      row.replace(/(\d+)([.a-z])/g, (m, n, c) => { const k = +n; if (c !== ".") for (let i = 0; i < k; i++) cells.push([x + i, y, KIND[c]]); x += k; return m; });
+    });
+    return cells;
+  };
+  const createSeeds = (canvas) => {
+    const gl = canvas.getContext("webgl", { antialias: true, alpha: true, premultipliedAlpha: true });
     if (!gl) return null;
     const VS = `
-      attribute vec3 aStart; attribute vec3 aTarget; attribute vec3 aTarget2; attribute vec3 aFall; attribute float aDelay; attribute float aSize;
-      uniform vec2 uView; uniform float uDist; uniform float uGather; uniform float uMorph; uniform float uScatter; uniform float uTime; uniform float uPR;
+      attribute vec3 aStart; attribute vec3 aTarget; attribute vec3 aFall;
+      attribute float aDelay; attribute float aSize; attribute vec3 aColor; attribute float aKind;
+      uniform vec2 uView; uniform float uDist; uniform float uGather; uniform float uScatter; uniform float uSettle; uniform float uGroundY; uniform float uTime; uniform float uPR;
+      uniform float uLight; uniform float uSurge; uniform float uInk; uniform vec2 uBulb; uniform float uBulbR; uniform float uPass;
+      varying vec3 vColor; varying float vAlpha; varying float vSoft;
+      float isK(float k) { return step(k - 0.5, aKind) * step(aKind, k + 0.5); }
       vec3 rotY(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z); }
       void main() {
+        float ray = isK(7.0), spark = isK(8.0), glass = isK(3.0) + isK(4.0), fil = isK(5.0), textO = isK(10.0);
         float g = clamp((uGather - aDelay * 0.42) / 0.58, 0.0, 1.0);
         g = g * g * (3.0 - 2.0 * g);
-        float m = clamp((uMorph - aDelay * 0.35) / 0.65, 0.0, 1.0);
-        m = m * m * (3.0 - 2.0 * m);
-        vec3 tgt = mix(aTarget, aTarget2, m);
-        float arc = sin(m * 3.14159);
-        tgt.z += arc * (aDelay - 0.5) * 560.0;
-        tgt.y += arc * (aDelay - 0.5) * 80.0;
+        vec3 tgt = aTarget;
+        tgt.xy = mix(tgt.xy, uBulb + (tgt.xy - uBulb) * (0.8 + 0.2 * uLight), ray);   // 光が点くと光線が外へ伸びる
         vec3 start = rotY(aStart, (1.0 - g) * 1.8 + uTime * 0.06);
         vec3 p = mix(start, tgt, g);
-        p.x += sin(uTime * 1.6 + aDelay * 37.0) * 0.6 * g;
-        p.y += cos(uTime * 1.2 + aDelay * 53.0) * 0.6 * g;
+        p.x += sin(uTime * 1.6 + aDelay * 37.0) * 0.5 * g;
+        p.y += cos(uTime * 1.2 + aDelay * 53.0) * 0.5 * g;
+        // 落ちる：横は先に広がり（ease-out）、縦は重さで加速する（ease-in）ので、ゆるい放物線になる。行き先は地面の線の上
         float s = clamp((uScatter - aDelay * 0.3) / 0.7, 0.0, 1.0);
-        p += aFall * (s * s);
+        p.x = mix(p.x, aFall.x, 1.0 - (1.0 - s) * (1.0 - s));
+        p.y = mix(p.y, uGroundY + 1.0 + (aDelay - 0.5) * 2.5, s * s);
+        p.z = mix(p.z, 0.0, s);
+        // 色：消えている電球は鈍い琥珀色。点くと、芯（フィラメント）のまわりが白く、ふちに向かって黄色く光り、周りが暖かく照らされる
+        float dl = distance(aTarget.xy, uBulb);
+        vec3 hot = mix(vec3(1.0, 0.94, 0.66), aColor, smoothstep(0.05, 0.85, dl / uBulbR));
+        vec3 col = aColor;
+        col = mix(col, mix(vec3(0.42, 0.38, 0.30), hot, uLight), glass);
+        col = mix(col, mix(vec3(0.30, 0.21, 0.14), vec3(1.0, 0.56, 0.12), uLight), fil);
+        col = mix(col, mix(vec3(0.95, 0.95, 0.96), aColor, uLight), textO);
+        col += vec3(1.0, 0.78, 0.45) * uLight * exp(-dl / (uBulbR * 2.6)) * (0.34 + 0.3 * uSurge) * (1.0 - glass - fil);
+        float alpha = 1.0;
+        alpha *= mix(1.0, uLight, ray);
+        alpha *= mix(1.0, uLight * (0.55 + 0.45 * sin(uTime * 3.1 + aDelay * 40.0)), spark);
+        col = mix(col, vec3(0.106, 0.176, 0.31), uInk);
+        alpha = mix(alpha, 1.0, uInk);
+        alpha *= 1.0 - uSettle;   // 積もった粒は、引かれた地面の線にとけて消える
+        float size = aSize;
+        vSoft = 0.0;
+        if (uPass > 1.5) alpha *= (1.0 - uSurge) * (1.0 - uInk);   // 光の上に重ねる芯は、強く光る瞬間とインクに変わるときに消える
+        else if (uPass > 0.5) {
+          float tw = 0.55 + 0.45 * sin(uTime * 3.1 + aDelay * 40.0);
+          float core = glass + fil;
+          alpha = ((glass * 0.065 + fil * 0.2) * (1.0 + 1.6 * uSurge) + ray * 0.06 + spark * 0.1 * tw) * uLight * (1.0 - uInk);
+          size *= 2.4 + 1.4 * uLight + 2.6 * uSurge * core;
+          col = mix(mix(vec3(1.0, 0.86, 0.52), vec3(1.0, 0.58, 0.20), fil + ray), vec3(1.0, 0.93, 0.66), spark);
+          vSoft = 1.0;
+        }
+        vColor = col; vAlpha = alpha;
         float scale = uDist / max(uDist - p.z, 40.0);
         gl_Position = vec4(p.x * scale / (uView.x * 0.5), p.y * scale / (uView.y * 0.5), 0.0, 1.0);
-        gl_PointSize = aSize * uPR * scale;
+        gl_PointSize = size * uPR * scale;
       }`;
     const FS = `
       precision mediump float;
-      uniform vec3 uColor;
+      varying vec3 vColor; varying float vAlpha; varying float vSoft;
       void main() {
         float d = length(gl_PointCoord - 0.5);
         if (d > 0.5) discard;
-        gl_FragColor = vec4(uColor, smoothstep(0.5, 0.38, d));
+        if (vSoft > 0.5) { float a = exp(-d * d * 16.0) * vAlpha; gl_FragColor = vec4(vColor * a, 0.0); }
+        else { float a = smoothstep(0.5, 0.36, d) * vAlpha; gl_FragColor = vec4(vColor * a, a); }
       }`;
     const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return gl.getShaderParameter(o, gl.COMPILE_STATUS) ? o : null; };
     const vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
@@ -585,10 +704,9 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
     gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
     gl.useProgram(prog);
-    const U = (n) => gl.getUniformLocation(prog, n);
-    const uView = U("uView"), uDist = U("uDist"), uGather = U("uGather"), uMorph = U("uMorph"), uScatter = U("uScatter"), uTime = U("uTime"), uPR = U("uPR"), uColor = U("uColor");
-    gl.uniform3f(uColor, 27 / 255, 45 / 255, 79 / 255);
-    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    const U = {};
+    ["uView", "uDist", "uGather", "uScatter", "uSettle", "uGroundY", "uTime", "uPR", "uLight", "uSurge", "uInk", "uBulb", "uBulbR", "uPass"].forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
+    gl.enable(gl.BLEND);
     const bufs = {};
     const attr = (name, data, size) => {
       const loc = gl.getAttribLocation(prog, name);
@@ -599,95 +717,97 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
       gl.enableVertexAttribArray(loc);
       gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
     };
-    const state = { gather: 0, morph: 0, scatter: 0, count: 0, W: 0, H: 0, running: false, visible: true, cleared: false };
+    const state = { gather: 0, scatter: 0, settle: 0, light: 0, surge: 0, ink: 0, count: 0, glowStart: 0, glowCount: 0, W: 0, H: 0, running: false, visible: true, cleared: false, pr: Math.min(window.devicePixelRatio || 1, 2), bulb: { x: 0, y: 0, r: 0 }, logoBox: null, onFrame: null };
     const DIST = 900;
     const rand = (a, b) => a + Math.random() * (b - a);
-    let base = null;   // 舞う位置・大きさ・遅れは一度だけ決める（字の形が変わっても種は同じ）
+    const cells = decodeLogo();
+    let base = null;   // 点の選び方・舞う位置・大きさ・遅れは一度だけ決める
     const layout = () => {
-      const pr = Math.min(window.devicePixelRatio || 1, 2);
       const r = canvas.getBoundingClientRect();
       const W = Math.max(1, Math.round(r.width)), H = Math.max(1, Math.round(r.height));
       state.W = W; state.H = H;
-      canvas.width = Math.round(W * pr); canvas.height = Math.round(H * pr);
+      canvas.width = Math.round(W * state.pr); canvas.height = Math.round(H * state.pr);
       gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.uniform2f(uView, W, H); gl.uniform1f(uDist, DIST); gl.uniform1f(uPR, pr);
+      gl.uniform2f(U.uView, W, H); gl.uniform1f(U.uDist, DIST); gl.uniform1f(U.uPR, state.pr);
+      gl.uniform1f(U.uGroundY, H / 2 - Math.round(H * 0.8));   // 地平線（画面の8割の高さ）
+      const aspect = LOGO.w / LOGO.h;
+      const lw = Math.min(W * 0.84, H * 0.5 * aspect, 900), lh = lw / aspect;
+      const box = { left: (W - lw) / 2, top: H * 0.43 - lh / 2, cs: lw / LOGO.w, lw, lh };
+      state.logoBox = box;
+      state.bulb = { x: box.left + (LOGO.bulb[0] + 0.5) * box.cs, y: box.top + (LOGO.bulb[1] + 0.5) * box.cs, r: LOGO.bulb[2] * box.cs };
+      gl.uniform2f(U.uBulb, state.bulb.x - W / 2, H / 2 - state.bulb.y); gl.uniform1f(U.uBulbR, state.bulb.r);
       return r;
     };
-    // 画面に並んでいる字（透明）の位置をそのまま裏の板に写し、インクの乗った点を拾う
-    const sample = (el, r) => {
-      const W = state.W, H = state.H;
-      const off = document.createElement("canvas"); off.width = W; off.height = H;
-      const ctx = off.getContext("2d");
-      const cs = getComputedStyle(el);
-      ctx.fillStyle = "#000"; ctx.textBaseline = "middle";
-      ctx.font = `900 ${cs.fontSize} "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif`;
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-      const range = document.createRange();
-      while (walker.nextNode()) {
-        const node = walker.currentNode;
-        for (let i = 0; i < node.data.length; i++) {
-          const c = node.data[i];
-          if (!c.trim()) continue;
-          range.setStart(node, i); range.setEnd(node, i + 1);
-          const b = range.getBoundingClientRect();
-          if (!b.width) continue;
-          ctx.fillText(c, b.left - r.left, b.top - r.top + b.height / 2);
-        }
-      }
-      const fsz = parseFloat(cs.fontSize);
-      const img = ctx.getImageData(0, 0, W, H).data;
-      const step = Math.max(2, Math.round(fsz / 80));
-      const hits = [];
-      for (let y = 0; y < H; y += step) for (let x = 0; x < W; x += step) if (img[(y * W + x) * 4 + 3] > 140) hits.push(x, y);
-      return { hits, step };
+    const pickBase = (wide) => {
+      const N = wide ? 14000 : 5200;
+      const small = cells.filter((c) => c[2] >= 4 && c[2] <= 8);
+      const big = cells.filter((c) => c[2] < 4 || c[2] > 8);
+      const keep = Math.max(0, Math.min(1, (N - small.length) / big.length));
+      let chosen = small.concat(big.filter(() => Math.random() < keep));
+      const isGlow = (k) => (k >= 3 && k <= 5) || k === 7 || k === 8;   // ガラス・芯・光線・きらめき
+      const rank = { 3: 0, 4: 1, 7: 2, 8: 3, 5: 4 };   // ガラス → 映り込み → 光線 → きらめき → 芯（＋）の順に重ねる
+      chosen = chosen.filter((c) => !isGlow(c[2])).concat(chosen.filter((c) => isGlow(c[2])).sort((a, b) => rank[a[2]] - rank[b[2]]));   // 光る点を最後にまとめる
+      const n = chosen.length;
+      const b = { wide, n, cell: chosen, jitter: new Float32Array(n * 2), start: new Float32Array(n * 3), delay: new Float32Array(n), size: new Float32Array(n), fall: new Float32Array(n * 3), color: new Float32Array(n * 3), kind: new Float32Array(n) };
+      chosen.forEach((c, i) => {
+        b.jitter.set([Math.random(), Math.random()], i * 2);
+        b.start.set([rand(-1, 1), rand(-1, 1), rand(-1.4, 0.32)], i * 3);
+        b.delay[i] = Math.random();
+        b.size[i] = rand(wide ? 3.1 : 2.3, wide ? 4.3 : 3.1);
+        b.fall.set([rand(-0.52, 0.52), 0, 0], i * 3);   // 地面のどこに落ちるか（横の位置）
+        const col = COLOR[c[2]], v = c[2] === 1 && Math.random() < 0.3 ? 0.8 : rand(0.94, 1.04);
+        b.color.set([Math.min(1, col[0] * v), Math.min(1, col[1] * v), Math.min(1, col[2] * v)], i * 3);
+        b.kind[i] = c[2];
+      });
+      b.glowStart = chosen.findIndex((c) => isGlow(c[2]));
+      b.glowCount = b.glowStart < 0 ? 0 : n - b.glowStart;
+      b.filStart = chosen.findIndex((c) => c[2] === 5);
+      b.filCount = b.filStart < 0 ? 0 : n - b.filStart;
+      attr("aDelay", b.delay, 1); attr("aSize", b.size, 1); attr("aColor", b.color, 3); attr("aKind", b.kind, 1);
+      return b;
     };
     const retarget = () => {
-      const r = layout(), W = state.W, H = state.H;
-      if (!base || base.wide !== (W >= 720)) {
-        const n = W < 720 ? 5200 : 14000;
-        base = { wide: W >= 720, n, start: new Float32Array(n * 3), delay: new Float32Array(n), size: new Float32Array(n), fall: new Float32Array(n * 3) };
-        for (let i = 0; i < n; i++) {
-          base.start.set([rand(-1, 1), rand(-1, 1), rand(-1.4, 0.32)], i * 3);
-          base.delay[i] = Math.random();
-          base.size[i] = rand(W < 720 ? 1.9 : 2.5, W < 720 ? 3.3 : 4.3) * (Math.random() < 0.06 ? 1.6 : 1);
-          base.fall.set([rand(-0.18, 0.18), -(1.15 + rand(0, 0.7)), rand(-0.13, 0.13)], i * 3);
-        }
-        attr("aDelay", base.delay, 1); attr("aSize", base.size, 1);
-      }
+      const r = layout(), W = state.W, H = state.H, box = state.logoBox;
+      if (!base || base.wide !== (W >= 720)) base = pickBase(W >= 720);
       const n = base.n;
-      const aStart = new Float32Array(n * 3), aFall = new Float32Array(n * 3);
+      const aStart = new Float32Array(n * 3), aFall = new Float32Array(n * 3), aTarget = new Float32Array(n * 3);
       for (let i = 0; i < n; i++) {
         aStart.set([base.start[i * 3] * W, base.start[i * 3 + 1] * H, base.start[i * 3 + 2] * DIST], i * 3);
         aFall.set([base.fall[i * 3] * W, base.fall[i * 3 + 1] * H, base.fall[i * 3 + 2] * DIST], i * 3);
+        const c = base.cell[i];
+        const x = box.left + (c[0] + base.jitter[i * 2]) * box.cs, y = box.top + (c[1] + base.jitter[i * 2 + 1]) * box.cs;
+        aTarget.set([x - W / 2, H / 2 - y, 0], i * 3);
       }
-      attr("aStart", aStart, 3); attr("aFall", aFall, 3);
-      ["aTarget", "aTarget2"].forEach((name, w) => {
-        const { hits, step } = sample(words[w], r);
-        const total = hits.length / 2;
-        const arr = new Float32Array(n * 3);
-        for (let i = 0; i < n; i++) {
-          const k = total ? (Math.random() * total | 0) : 0;
-          const tx = (hits[k * 2] || W / 2) + rand(-step * 0.4, step * 0.4), ty = (hits[k * 2 + 1] || H / 2) + rand(-step * 0.4, step * 0.4);
-          arr.set([tx - W / 2, H / 2 - ty, 0], i * 3);
-        }
-        attr(name, arr, 3);
-      });
-      state.count = n;
+      attr("aStart", aStart, 3); attr("aFall", aFall, 3); attr("aTarget", aTarget, 3);
+      state.count = n; state.glowStart = base.glowStart; state.glowCount = base.glowCount; state.filStart = base.filStart; state.filCount = base.filCount;
+      if (state.onLayout) state.onLayout();
     };
-    state.retarget = retarget;
     const t0 = performance.now();
-    // 遅い端末では点を減らす（最初の30コマの平均が重ければ半分に）
-    let probe = 0, probeStart = 0, drawN = 0;
+    let probe = 0, probeStart = 0;
     const frame = () => {
       if (!state.running) return;
-      if (probe < 30) { if (probe === 0) probeStart = performance.now(); probe++; if (probe === 30 && (performance.now() - probeStart) / 30 > 34) drawN = Math.round(state.count / 2); }
-      if (state.visible && state.scatter < 1) {
-        gl.uniform1f(uTime, (performance.now() - t0) / 1000);
-        gl.uniform1f(uGather, state.gather); gl.uniform1f(uMorph, state.morph); gl.uniform1f(uScatter, state.scatter);
+      // 遅い端末では、描く細かさ（画素の密度）を下げる
+      if (probe < 30) { if (probe === 0) probeStart = performance.now(); probe++; if (probe === 30 && (performance.now() - probeStart) / 30 > 34 && state.pr > 1) { state.pr = 1; retarget(); } }
+      const now = (performance.now() - t0) / 1000;
+      let L = state.light;
+      if (L > 0.97) L *= 1 - 0.03 * (Math.sin(now * 7.3) * 0.6 + Math.sin(now * 17.9) * 0.4 + 1) / 2;   // 芯のかすかな揺らぎ
+      if (state.visible && state.settle < 1) {
+        gl.uniform1f(U.uTime, now); gl.uniform1f(U.uGather, state.gather);
+        gl.uniform1f(U.uScatter, state.scatter); gl.uniform1f(U.uSettle, state.settle); gl.uniform1f(U.uLight, L); gl.uniform1f(U.uSurge, state.surge); gl.uniform1f(U.uInk, state.ink);
         gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.drawArrays(gl.POINTS, 0, drawN || state.count);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.uniform1f(U.uPass, 0);
+        gl.drawArrays(gl.POINTS, 0, state.count);
+        if (L > 0.01 && state.ink < 1 && state.glowCount) {
+          gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ZERO, gl.ONE); gl.uniform1f(U.uPass, 1);
+          gl.drawArrays(gl.POINTS, state.glowStart, state.glowCount);
+          if (state.filCount) {   // 芯（＋）は光の上にもう一度くっきり描く（ロゴの十字が光に埋もれないように）
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.uniform1f(U.uPass, 2);
+            gl.drawArrays(gl.POINTS, state.filStart, state.filCount);
+          }
+        }
         state.cleared = false;
-      } else if (state.scatter >= 1 && !state.cleared) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); state.cleared = true; }
+      } else if (state.settle >= 1 && !state.cleared) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); state.cleared = true; }
+      if (state.onFrame) state.onFrame(L);
       requestAnimationFrame(frame);
     };
     retarget();
@@ -695,6 +815,192 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
     let rt = 0;
     addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(retarget, 200); });
     return state;
+  };
+
+  // ---- 雨（2D canvas）：「亡くなりました」で一気に降り、次の場面では小雨になって、やがて止む ----
+  const createRain = (canvas) => {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    const R = { rain: 0, tone: 0, ground: 0, visible: true };   // tone 0：紺の地に白い雨／1：紙の地に紺の雨
+    const pr = Math.min(window.devicePixelRatio || 1, 2), WIND = -0.16;
+    const rand = (a, b) => a + Math.random() * (b - a);
+    let w = 1, h = 1, sc = 1, drops = [], splash = [];
+    const mk = (anywhere) => {
+      const z = 0.25 + 0.75 * Math.pow(Math.random(), 1.4);   // 奥行き：0.25（遠い）〜1（近い）
+      const gy = R.ground || h;
+      return { x: rand(-0.05, 1.25) * w, y: anywhere ? rand(-0.15, 1) * gy : rand(-0.3, -0.02) * h, z, len: (14 + 34 * z) * sc, v: (950 + 750 * z) * (h / 820) };
+    };
+    const layout = () => {
+      const r = canvas.getBoundingClientRect();
+      w = Math.max(1, r.width); h = Math.max(1, r.height); sc = w < 720 ? 1 : 1.25;
+      canvas.width = Math.round(w * pr); canvas.height = Math.round(h * pr);
+      drops = Array.from({ length: w < 720 ? 260 : 560 }, () => mk(true));   // 最初から画面中に散らしておく＝降り始めが「一気」になる
+      splash = [];
+    };
+    const col = (a) => { const k = R.tone; return `rgba(${Math.round(222 - 195 * k)}, ${Math.round(230 - 185 * k)}, ${Math.round(244 - 165 * k)}, ${a.toFixed(3)})`; };
+    layout();
+    let rt = 0;
+    addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 200); });
+    let last = performance.now(), clean = true;
+    gsap.ticker.add(() => {
+      const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
+      const k = R.rain;
+      if (!R.visible || k < 0.002) { if (!clean) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); clean = true; } return; }
+      clean = false;
+      const gy = R.ground || h, fade = Math.min(1, k * 1.4);
+      ctx.setTransform(pr, 0, 0, pr, 0, 0); ctx.clearRect(0, 0, w, h);
+      const n = Math.ceil(drops.length * Math.min(1, k * 1.1));
+      for (let i = 0; i < n; i++) {
+        const d = drops[i];
+        d.y += d.v * dt; d.x += WIND * d.v * dt;
+        if (d.y > gy) {   // 地面に当たったら、しぶきを上げて、また上から
+          if (d.z > 0.6 && Math.random() < 0.6 && splash.length < 90) splash.push({ x: d.x, y: gy, t: 0, s: d.z });
+          Object.assign(d, mk(false));
+        }
+      }
+      ctx.lineCap = "round";
+      const soft = 1 - 0.35 * R.tone;   // 紙の上では少し控えめに
+      [[0, 0.5, 0.8, 0.16], [0.5, 0.8, 1.05, 0.25], [0.8, 1.01, 1.5, 0.36]].forEach(([lo, hi, lw, a]) => {   // 奥・中・手前の3層
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const d = drops[i];
+          if (d.z < lo || d.z >= hi) continue;
+          ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - WIND * d.len, d.y - d.len);
+        }
+        ctx.lineWidth = lw * sc; ctx.strokeStyle = col(a * soft * fade); ctx.stroke();
+      });
+      ctx.lineWidth = 1;
+      for (let i = splash.length - 1; i >= 0; i--) {
+        const q = (splash[i].t += dt) / 0.3, sp = splash[i];
+        if (q >= 1) { splash.splice(i, 1); continue; }
+        const rx = (2 + 9 * q) * sp.s * sc, up = 14 * sp.s * sc * q * (1 - q) * 4;
+        ctx.strokeStyle = ctx.fillStyle = col((1 - q) * 0.5 * soft * fade);
+        ctx.beginPath(); ctx.ellipse(sp.x, sp.y, rx, rx * 0.3, 0, Math.PI, Math.PI * 2); ctx.stroke();
+        ctx.fillRect(sp.x - rx - 1, sp.y - up, 1.4, 1.4); ctx.fillRect(sp.x + rx, sp.y - up * 0.8, 1.4, 1.4);
+      }
+      if (R.tone < 0.5) {   // 地面の上にたまる雨けむり（紺の地のときだけ）
+        const g = ctx.createLinearGradient(0, gy - h * 0.14, 0, gy);
+        g.addColorStop(0, col(0)); g.addColorStop(1, col(0.08 * fade));
+        ctx.fillStyle = g; ctx.fillRect(0, gy - h * 0.14, w, h * 0.14);
+      }
+    });
+    return R;
+  };
+
+  // ---- 本物らしい空（WebGL）：08で紙に差す日の光と、09の青空・雲・太陽のまぶしさ ----
+  const createSky = (canvas) => {
+    const gl = canvas.getContext("webgl", { alpha: true, premultipliedAlpha: true, antialias: false });
+    if (!gl) return null;
+    const VS = "attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }";
+    const FS = `
+      #ifdef GL_FRAGMENT_PRECISION_HIGH
+      precision highp float;
+      #else
+      precision mediump float;
+      #endif
+      uniform vec2 uRes; uniform float uScale; uniform float uTime;
+      uniform vec2 uSun; uniform float uR; uniform float uHz; uniform float uSky; uniform float uLight;
+      float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+      float noise(vec2 p) {
+        vec2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+      }
+      float fbm(vec2 p) {
+        float v = 0.0, a = 0.5;
+        mat2 r = mat2(0.8, -0.6, 0.6, 0.8);
+        for (int i = 0; i < 5; i++) { v += a * noise(p); p = r * p * 2.03 + 17.1; a *= 0.5; }
+        return v;
+      }
+      void main() {
+        vec2 px = vec2(gl_FragCoord.x, uRes.y * uScale - gl_FragCoord.y) / uScale;   // CSSの画素、yは下向き
+        vec2 ds = px - uSun;
+        float d = length(ds), R = uR, ang = atan(ds.y, ds.x);
+        // 08：紙に差す日の光。太陽のまわりの暖かい光だまりと、斜めに落ちる光の筋
+        float rays = noise(vec2(ang * 9.0, uTime * 0.12)) * noise(vec2(ang * 23.0 + 3.0, uTime * 0.07 + 5.0));
+        rays = smoothstep(0.16, 0.6, rays) * exp(-d / (uRes.y * 0.6)) * smoothstep(R * 1.2, R * 4.0, d);
+        float pool = exp(-d / (R * 4.0)) * 0.55 + exp(-d / (uRes.y * 0.5)) * 0.32;
+        float la = clamp((pool + rays * 0.42) * uLight, 0.0, 1.0) * 0.3;
+        vec4 paper = vec4(vec3(1.0, 0.8, 0.45) * la, la);   // 乗算済みのアルファ
+        // 09：太陽から、ふちのやわらかい円で空がひらく。地平線より下は紙のまま
+        float full = length(max(uSun, uRes - uSun)) + 4.0;
+        float F = 60.0 + full * 0.2, Rr = uSky * (full + F);
+        float reveal = (1.0 - smoothstep(Rr - F, Rr, d)) * step(px.y, uHz);
+        if (reveal < 0.001) { gl_FragColor = paper; return; }
+        // 空の色：天頂は深い青、地平線に近づくほど白くかすむ。太陽のまわりは明るむ
+        float v = clamp((uHz - px.y) / uHz, 0.0, 1.0);
+        vec3 col = mix(vec3(0.80, 0.88, 0.94), vec3(0.24, 0.52, 0.86), smoothstep(0.0, 0.42, v));
+        col = mix(col, vec3(0.09, 0.31, 0.68), smoothstep(0.38, 1.0, v));
+        col += vec3(0.22, 0.18, 0.1) * exp(-d / (uRes.y * 0.22));
+        col *= mix(1.0, 0.8, smoothstep(uRes.y * 0.25, uRes.y * 0.9, d));   // 太陽から離れるほど空は深い青になる
+        // 夏の積雲：地平線に近いほど小さく遠くに見えるように、奥行きで縮める
+        float band = smoothstep(0.03, 0.12, v) * (1.0 - smoothstep(0.18, 0.36, v));   // 雲は地平線の近くだけ（上の文字にかからない）
+        if (band > 0.001) {
+          float depth = 1.0 / (v + 0.18);
+          vec2 cp = vec2((px.x - uRes.x * 0.5) / uRes.x * depth * 1.3 + uTime * 0.01, depth * 1.1);
+          vec2 warp = vec2(noise(cp * 0.8 + 3.1), noise(cp * 0.8 - 7.7));
+          vec2 q = cp * 1.1 + warp * 0.7;
+          float den = fbm(q);
+          float c = smoothstep(0.55, 0.72, den) * band;
+          float lit = clamp((den - fbm(q + vec2(0.05, -0.09))) * 5.0 + 0.6, 0.0, 1.0);   // 上と太陽の側が明るく、底は灰色がかる
+          vec3 cloud = mix(vec3(0.62, 0.69, 0.8), vec3(1.0, 0.99, 0.97), lit);
+          col = mix(col, cloud, c);
+        }
+        // 高い空の薄い雲
+        if (v > 0.5) {
+          float ci = fbm(vec2(px.x / (uRes.x * 0.9) + uTime * 0.006, px.y / (uRes.y * 0.07)));
+          col = mix(col, vec3(0.95, 0.97, 1.0), smoothstep(0.6, 0.88, ci) * smoothstep(0.5, 0.95, v) * 0.3);
+        }
+        // 太陽：白い芯と、まぶしいにじみ、空気にとけるかすかな光の筋だけ（写真のレンズの効果は入れない）
+        float core = smoothstep(R * 0.95, R * 0.55, d);
+        float glare = exp(-d / (R * 1.3)) * 0.9 + exp(-d / (R * 4.5)) * 0.4 + exp(-d / (R * 14.0)) * 0.13;
+        float skyRays = smoothstep(0.4, 0.8, noise(vec2(ang * 11.0, uTime * 0.1))) * exp(-d / (uRes.y * 0.28)) * 0.05;
+        col += vec3(1.0, 0.97, 0.9) * (glare + skyRays);
+        col = mix(col, vec3(1.0), core);
+        col = min(col, vec3(1.0));
+        gl_FragColor = vec4(col, 1.0) * reveal + paper * (1.0 - reveal);
+      }`;
+    const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return gl.getShaderParameter(o, gl.COMPILE_STATUS) ? o : null; };
+    const vs = sh(gl.VERTEX_SHADER, VS), fs = sh(gl.FRAGMENT_SHADER, FS);
+    if (!vs || !fs) return null;
+    const prog = gl.createProgram();
+    gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+    gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const U = {};
+    ["uRes", "uScale", "uTime", "uSun", "uR", "uHz", "uSky", "uLight"].forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
+    const S = { sky: 0, light: 0, visible: true, sun: { x: 0, y: 0, r: 20 }, hz: 0 };
+    let w = 1, h = 1, scale = Math.min(window.devicePixelRatio || 1, 2) * 0.5;   // 雲も光もやわらかいので、半分の細かさで描いて引き伸ばす
+    const layout = () => {
+      const r = canvas.getBoundingClientRect();
+      w = Math.max(1, r.width); h = Math.max(1, r.height);
+      canvas.width = Math.round(w * scale); canvas.height = Math.round(h * scale);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    };
+    layout();
+    let rt = 0;
+    addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 200); });
+    const t0 = performance.now();
+    let clean = true, probe = 0, probeStart = 0;
+    gsap.ticker.add(() => {
+      if (!S.visible || (S.sky < 0.002 && S.light < 0.002)) {
+        if (!clean) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); clean = true; probe = 0; }
+        return;
+      }
+      // 遅い端末では、さらに粗く描く
+      if (probe < 24) { if (probe === 0) probeStart = performance.now(); probe++; if (probe === 24 && (performance.now() - probeStart) / 24 > 30 && scale > 0.4) { scale = Math.max(0.4, scale * 0.6); layout(); } }
+      clean = false;
+      gl.uniform2f(U.uRes, w, h); gl.uniform1f(U.uScale, canvas.width / w);
+      gl.uniform1f(U.uTime, (performance.now() - t0) / 1000);
+      gl.uniform2f(U.uSun, S.sun.x, S.sun.y); gl.uniform1f(U.uR, S.sun.r); gl.uniform1f(U.uHz, S.hz);
+      gl.uniform1f(U.uSky, S.sky); gl.uniform1f(U.uLight, S.light);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    });
+    return S;
   };
 
   // ---- はじめに：タップ（クリック、→キー）で場面が進む。←や画面の左端で戻る ----
@@ -714,91 +1020,328 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
       });
       return out;
     };
-    // 種
-    const ideaEl = $(".idea-big"), aideaEl = $(".aidea-big");
-    const seeds = createSeeds($(".seeds"), [ideaEl, aideaEl]);
+    const halo = $(".halo"), flood = $(".flood"), en = $(".sn-en");
+    const seeds = createSeeds($(".seeds"));
     root.classList.add(seeds ? "seeds-on" : "seeds-off");
-    const S = seeds || { gather: 1, morph: 0, scatter: 0 };
-    let gatherTw = null;
+    const S = seeds || { gather: 1, scatter: 0, settle: 0, light: 1, surge: 0, ink: 0 };
+    // 光と紙の円は、電球の位置から広がる
+    const place = () => {
+      const W = stageEl.clientWidth, H = stageEl.clientHeight;
+      const b = seeds ? seeds.bulb : { x: W / 2, y: H * 0.36, r: Math.min(W, H) * 0.08 };
+      const size = b.r * 10;
+      Object.assign(halo.style, { left: b.x + "px", top: b.y + "px", width: size + "px", height: size + "px" });
+      if (seeds) en.style.top = (seeds.logoBox.top + seeds.logoBox.lh + H * 0.035) + "px";
+      return { x: b.x, y: b.y, full: Math.hypot(Math.max(b.x, W - b.x), Math.max(b.y, H - b.y)) + 4 };
+    };
+    let fl = place();
+    // 紙は電球から、ふちのやわらかい円で広がる（光がそのまま紙になる）
+    const flp = { p: 0 };
+    const setMask = () => {
+      const F = 70 + fl.full * 0.22, R = flp.p * (fl.full + F);
+      const m = `radial-gradient(circle at ${fl.x.toFixed(1)}px ${fl.y.toFixed(1)}px, #000 ${Math.max(0, R - F).toFixed(1)}px, rgba(0, 0, 0, 0) ${Math.max(0.1, R).toFixed(1)}px)`;
+      flood.style.webkitMaskImage = m; flood.style.maskImage = m;
+      flood.style.visibility = flp.p > 0 ? "visible" : "hidden";
+    };
+    setMask();
+    // seek（戻る操作）では onUpdate が呼ばれないので、毎フレーム値の変化を見て描き直す
+    let lastP = 0;
+    gsap.ticker.add(() => { if (flp.p !== lastP) { lastP = flp.p; setMask(); } });
     if (seeds) {
+      seeds.onLayout = () => { fl = place(); setMask(); };
+      seeds.onFrame = (L) => {
+        halo.style.opacity = Math.min(1, L * (1 - S.ink)).toFixed(3);
+        halo.style.transform = `translate(-50%, -50%) scale(${(1 + S.surge * 0.6).toFixed(3)})`;
+      };
       new IntersectionObserver(([e]) => { seeds.visible = e.isIntersecting; }).observe(stageEl);
-      let started = false;
-      const gather = () => { if (started) return; started = true; seeds.retarget(); gatherTw = gsap.to(seeds, { gather: 1, duration: 2.6, ease: "none", delay: 0.1 }); };
-      if (document.fonts && document.fonts.load) Promise.race([document.fonts.load('900 100px "Zen Old Mincho"', "薬のアイデア"), new Promise((r) => setTimeout(r, 900))]).then(gather, gather);
-      else gather();
+    } else gsap.set(halo, { opacity: 1 });
+    gsap.set(en, { autoAlpha: 0 });
+    // 読み込み直後：種が集まる → 電球がちらついて灯る
+    const intro = gsap.timeline({ delay: 0.15 });
+    if (seeds) {
+      intro.to(seeds, { gather: 1, duration: 2.6, ease: "none" })
+        .to(seeds, { light: 0.65, duration: 0.06 }, "+=0.15")
+        .to(seeds, { light: 0.06, duration: 0.09 })
+        .to(seeds, { light: 0.9, duration: 0.05 })
+        .to(seeds, { light: 0.22, duration: 0.13 })
+        .to(seeds, { light: 1, duration: 0.5, ease: "power2.out" });
     }
+    intro.to(en, { autoAlpha: 1, duration: 0.6 }, seeds ? "-=0.25" : 0.3);
+    // ---- 物語の背景：地面の線・一粒の種・芽・太陽・青空・ひまわり（SVG）と、雨（canvas） ----
+    const ink = $(".ink"), sky = $(".sky"), garden = $(".garden"), ground = $(".g-ground");
+    const plant = $(".g-plant"), sunEl = $(".g-sun");
+    const P = (q) => plant.querySelector(q), PA = (q) => [...plant.querySelectorAll(q)];
+    const seed0 = P(".gp-seed"), mound = P(".gp-mound"), stem = P(".gp-stem"), coty = P(".gp-coty");
+    const leaves = PA(".gp-leaf"), petals = PA(".gp-pt"), disc = P(".gp-disc"), dots = P(".gp-dots"), falls = PA(".gp-sd");
+    const tipAt = P(".gp-tipat"), tip = P(".gp-tip"), head = P(".gp-head");
+    // 茎の先の芽は、伸びていく茎の先端に毎フレームついていく（戻る操作でも同じ）
+    const stemLen = stem.getTotalLength();
+    let lastOff = NaN;
+    gsap.ticker.add(() => {
+      const o = parseFloat(stem.style.strokeDashoffset);
+      const off = isNaN(o) ? 100 : o;
+      if (off === lastOff) return;
+      lastOff = off;
+      const pt = stem.getPointAtLength(Math.max(0, (1 - off / 100) * stemLen));
+      tipAt.setAttribute("transform", `translate(${pt.x.toFixed(2)} ${pt.y.toFixed(2)})`);
+    });
+    const sunDisc = sunEl.querySelector(".gs-disc"), sunRays = [...sunEl.querySelectorAll(".gs-rays path")];
+    const R = createRain($(".rain")) || { rain: 0, tone: 0, ground: 0, visible: true };
+    let sunAt = { x: 0, y: 0 }, hz = 0, SW = 0;
+    // 青空は太陽の位置から、ふちのやわらかい円でひらく（はじめの「電球の光が紙になる」と対になる）
+    // WebGL の空が使えないときだけ、グラデーションの板を同じ形で見せる
+    const SK = createSky($(".sky-gl")) || { sky: 0, light: 0, fallback: true, sun: {}, hz: 0 };
+    const setSky = () => {
+      if (!SK.fallback) return;
+      const full = Math.hypot(Math.max(sunAt.x, SW - sunAt.x), Math.max(sunAt.y, hz - sunAt.y)) + 4;
+      const F = 60 + full * 0.2, Rr = SK.sky * (full + F);
+      const m = `radial-gradient(circle at ${sunAt.x.toFixed(1)}px ${sunAt.y.toFixed(1)}px, #000 ${Math.max(0, Rr - F).toFixed(1)}px, rgba(0, 0, 0, 0) ${Math.max(0.1, Rr).toFixed(1)}px)`;
+      sky.style.webkitMaskImage = m; sky.style.maskImage = m;
+      sky.style.visibility = SK.sky > 0 ? "visible" : "hidden";
+    };
+    // 地平線は画面の8割の高さ。芽と太陽は右寄せにして、左の文字とぶつけない
+    const placeGarden = () => {
+      SW = stageEl.clientWidth; const SH = stageEl.clientHeight;
+      hz = Math.round(SH * 0.8);
+      stageEl.style.setProperty("--hz", hz + "px");
+      stageEl.style.setProperty("--gb", (SH - hz) + "px");   // 地平線から下の高さ
+      const ph = SW >= 720 ? Math.min(SH * 0.42, 360) : Math.min(SH * 0.3, 300), k = ph / 300, px = SW * 0.82;   // 広い画面では少し大きく
+      Object.assign(plant.style, { left: (px - 60 * k).toFixed(1) + "px", top: (hz - 300 * k).toFixed(1) + "px", width: (120 * k).toFixed(1) + "px", height: (330 * k).toFixed(1) + "px" });
+      const ss = Math.min(SW, SH) * 0.24;
+      sunAt = { x: px, y: SH * 0.17 };
+      Object.assign(sunEl.style, { left: (sunAt.x - ss / 2).toFixed(1) + "px", top: (sunAt.y - ss / 2).toFixed(1) + "px", width: ss.toFixed(1) + "px", height: ss.toFixed(1) + "px" });
+      R.ground = hz;
+      SK.sun = { x: sunAt.x, y: sunAt.y, r: ss * 0.2 }; SK.hz = hz;   // 描いた太陽の円と同じ位置・大きさ
+      setSky();
+    };
+    placeGarden();
+    let gt = 0;
+    addEventListener("resize", () => { clearTimeout(gt); gt = setTimeout(placeGarden, 200); });
+    let lastSky = 0;
+    gsap.ticker.add(() => { if (SK.sky !== lastSky) { lastSky = SK.sky; setSky(); } });   // 戻る操作（seek）でも描き直す
+    gsap.set(coty, { scale: 0, svgOrigin: "60 281" });
+    gsap.set(tip, { scale: 0, transformOrigin: "50% 100%" });
+    gsap.set(leaves[0], { scale: 0, rotation: -28, svgOrigin: "60 224" });
+    gsap.set(leaves[1], { scale: 0, rotation: 28, svgOrigin: "60.5 170" });
+    gsap.set([...petals, disc, dots], { scale: 0, svgOrigin: "61 66" });
+    gsap.set(head, { scaleY: 0.4, rotation: -10, svgOrigin: "61 66" });   // はじめは真上の太陽を見上げている
+    gsap.set([coty, tip, head, ...leaves], { autoAlpha: 0 });   // 大きさ0のままだと点が残ることがあるので、出番までは描かない
+    gsap.set(sunDisc, { scale: 0, svgOrigin: "0 0" });
+    garden.style.visibility = "visible";
+    new IntersectionObserver(([e]) => { R.visible = SK.visible = e.isIntersecting; }).observe(stageEl);
+
     // 場面の流れを1本のタイムラインにして、場面ごとに印（ラベル）を付ける
-    const rw = $(".rewrite"), man = $(".manifesto");
+    const rw = $(".rewrite");
+    const scNo = $(".sc-no"), scOf = $(".sc-of"), hint = $(".intro-hint");
     const headChars = mkChars(rw.querySelector(".rw-a"), "ic");
     const oldEl = rw.querySelector(".rw-old"), strike = oldEl.querySelector(".rw-strike"), strikePath = strike.querySelector("path");
     const oldChars = mkChars(oldEl, "fc");
     const mark = rw.querySelector("mark");
     const newChars = mkChars(mark, "ic");
-    const lines = [...man.querySelectorAll("p")].map((ln) => mkChars(ln, "ic"));
-    gsap.set([...headChars, ...oldChars, ...newChars, ...lines.flat()], { opacity: 0 });
+    gsap.set([...headChars, ...oldChars, ...newChars], { opacity: 0 });
     gsap.set(mark, { backgroundSize: "0% 100%" });
     const H = () => stageEl.clientHeight;
+    const PAPER = "#F6F3EA", INK = "#1B2D4F", PAPER2 = "rgba(246, 243, 234, .6)", INK2 = "rgba(27, 45, 79, .6)";
     const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
+    const order = ["idea"];
     tl.addLabel("idea", 0)
-      // → AIデア：種が組み替わる
-      .to([".s-idea .sn-sub", ".s-idea .sn-foot"], { autoAlpha: 0, duration: 0.3 }, 0)
-      .to(S, { morph: 1, duration: 1.7 }, 0.05)
-      .to(ideaEl, { autoAlpha: 0, duration: 0.35 }, 0.2)
-      .set(".s-aidea", { autoAlpha: 1 }, 0.6)
-      .fromTo(aideaEl, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 }, 0.9)
-      .fromTo(".s-aidea .cap", { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: "power2.out" }, 1.4)
-      .addLabel("aidea", 1.9);
-    let t = 1.9;
-    // → 書き直し：種が落ちる → 「薬剤師＝薬を作る人」 → 線 → 字が落ちる → 「気づける人」 → 蛍光ペン
-    tl.to(".s-aidea .cap", { autoAlpha: 0, duration: 0.25 }, t)
-      .to(S, { scatter: 1, duration: 1.0, ease: "power1.in" }, t)
-      .to(aideaEl, { autoAlpha: 0, duration: 0.3 }, t + 0.1)
-      .set(".s-aidea", { autoAlpha: 0 }, t + 0.6)
-      .set(rw, { autoAlpha: 1 }, t + 0.7)
-      .fromTo(".rw-cap-a", { opacity: 0 }, { opacity: 1, duration: 0.2 }, t + 0.7)
-      .fromTo(".rw-foot", { autoAlpha: 0 }, { autoAlpha: 0, duration: 0.01 }, t + 0.7)
-      .to(headChars, { opacity: 1, duration: 0.06, stagger: { amount: 0.22 } }, t + 0.75)
-      .to(oldChars, { opacity: 1, duration: 0.06, stagger: { amount: 0.28 } }, t + 1.0)
-      .set(strikePath, { opacity: 1 }, t + 1.85)
-      .to(strikePath, { strokeDashoffset: 0, duration: 0.45, ease: "power1.inOut" }, t + 1.86);
-    oldChars.forEach((c, i) => {
-      const dir = i % 2 ? 1 : -1;
-      const at = t + 2.45 + i * 0.05;
-      tl.to(c, { y: () => H() * (0.75 + Math.random() * 0.2), duration: 0.8, ease: "power2.in" }, at)
-        .to(c, { x: dir * (14 + Math.random() * 46), rotation: dir * (60 + Math.random() * 120), duration: 0.8, ease: "power1.out" }, at)
-        .to(c, { opacity: 0, duration: 0.2 }, at + 0.6);
-    });
-    tl.to(strike, { y: () => H() * 0.8, rotation: -8, duration: 0.8, ease: "power2.in" }, t + 2.5)
-      .to(strike, { opacity: 0, duration: 0.2 }, t + 3.1)
-      .to(".rw-cap-a", { opacity: 0, duration: 0.15 }, t + 3.2)
-      .to(".rw-cap-b", { opacity: 1, duration: 0.15 }, t + 3.3)
-      .to(newChars, { opacity: 1, duration: 0.06, stagger: { amount: 0.36 } }, t + 3.4)
-      .to(mark, { backgroundSize: "100% 100%", duration: 0.45, ease: "power1.inOut" }, t + 3.9)
-      .to(".rw-foot", { autoAlpha: 1, duration: 0.3 }, t + 4.3)
-      .addLabel("rewrite", t + 4.7);
-    t += 4.7;
-    // → 三つの方向
-    tl.to(rw, { autoAlpha: 0, y: -30, duration: 0.3, ease: "power2.in" }, t)
-      .set(man, { autoAlpha: 1 }, t + 0.3);
-    lines.forEach((cs, i) => tl.to(cs, { opacity: 1, duration: 0.06, stagger: { amount: 0.24 } }, t + 0.35 + i * 0.32));
-    tl.addLabel("manifesto", t + 1.45).to({}, { duration: 0.01 }, t + 1.45);   // 最後の印まで時間を伸ばしておく
+      // → 薬剤師をめざしたきっかけの話へ：電球の光が広がって紙になり、ロゴの種は紺の粒になって落ちていく
+      .to([".s-idea .sn-sub", ".s-idea .sn-foot", en], { autoAlpha: 0, duration: 0.3 }, 0)
+      .to(S, { surge: 1, duration: 0.38, ease: "power2.in" }, 0)            // 電球がひときわ強く光って
+      .to(flp, { p: 1, duration: 0.95, ease: "power2.in" }, 0.14)   // その光が紙になって広がる
+      .to(S, { ink: 1, duration: 0.6 }, 0.45)
+      .to(S, { light: 0, surge: 0, duration: 0.5 }, 0.62)
+      .to(S, { scatter: 1, duration: 1.2, ease: "none" }, 0.7)   // ロゴの粒が紺の粒になって、地面に落ちていく
+      .to(scNo, { color: INK, duration: 0.3 }, 0.7).to(scOf, { color: INK2, duration: 0.3 }, 0.7).to(hint, { color: INK2, duration: 0.3 }, 0.7);
+    if (!seeds) tl.to(".logo-fb", { autoAlpha: 0, duration: 0.3 }, 0.5).to(halo, { opacity: 0, duration: 0.5 }, 0.62);
 
-    const order = ["idea", "aidea", "rewrite", "manifesto"];
-    const cur = $(".sc-cur"), nextBtn = $(".ic-next"), hint = $(".intro-hint");
-    const index = () => { let k = 0; order.forEach((l, i) => { if (tl.labels[l] <= tl.time() + 0.001) k = i; }); return k; };
-    let shown = 0;
-    const sync = (k = index()) => {
-      shown = k;
-      cur.textContent = String(k + 1).padStart(2, "0");
-      nextBtn.textContent = k === order.length - 1 ? "ノートを開く ▸" : "次へ ▸";
+    // 1画面に1文。背景の動きは場面の data-fx で決める
+    const addBeat = (b, t, label, isLast) => {
+      const fx = b.dataset.fx || "", dark = b.classList.contains("dark");
+      const chars = mkChars(b, "ic");
+      gsap.set(chars, { opacity: 0 });
+      let tin = t;
+      if (dark) {   // 紺の幕が下から上がる
+        tl.set(ink, { transformOrigin: "50% 100%" }, t).to(ink, { scaleY: 1, duration: 0.3, ease: "power2.inOut" }, t)
+          .to([scNo, garden], { color: PAPER, duration: 0.2 }, t + 0.15).to([scOf, hint], { color: PAPER2, duration: 0.2 }, t + 0.15);
+        tin = t + 0.25;
+      }
+      if (fx === "rain") {   // 幕が上がりきったところで、一気に雨が降る
+        tl.to(R, { rain: 1, tone: 0, duration: 0.1, ease: "power1.out" }, t + 0.26);
+        tin = t + 0.5;
+      }
+      if (fx === "bloom") {   // 太陽から青空がひらく
+        tl.to(SK, { sky: 1, duration: 0.9, ease: "power2.inOut" }, t);
+        if (!SK.fallback) tl.to(sunEl, { autoAlpha: 0, duration: 0.5 }, t + 0.2);   // ペンで描いた太陽は、本物の太陽に置きかわる
+        tin = t + 0.8;
+      }
+      tl.fromTo(b, { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: 0.22, ease: "power2.out" }, tin)
+        .to(chars, { opacity: 1, duration: 0.05, stagger: { amount: dark ? 0.42 : 0.3 } }, tin + 0.04);
+      let hold = tin + (dark ? 0.55 : 0.42);
+      if (fx === "ground") {   // 積もった粒の上に、地面の線が引かれる（ここから物語の地面になる）
+        tl.to(ground, { scaleX: 1, duration: 0.6, ease: "power2.out" }, 1.78)
+          .to(S, { settle: 1, duration: 0.5 }, 2.12);
+        hold = Math.max(hold, 2.65);
+      }
+      if (fx === "seed") {   // スイカ：一粒の種が落ちて、土に沈む
+        const at = tin;
+        tl.fromTo(seed0, { opacity: 0 }, { opacity: 1, duration: 0.12 }, at + 0.35)
+          .fromTo(seed0, { y: -250, rotation: -30 }, { y: -18.5, rotation: 170, duration: 0.6, ease: "power2.in", transformOrigin: "50% 50%" }, at + 0.35)
+          .to(seed0, { y: -26, duration: 0.11, ease: "power1.out" }, at + 0.95)
+          .to(seed0, { y: -18.5, duration: 0.11, ease: "power1.in" }, at + 1.06)
+          .to(seed0, { y: 0, rotation: 180, duration: 0.4, ease: "power2.inOut" }, at + 1.3)
+          .to(mound, { strokeDashoffset: 0, duration: 0.3, ease: "power1.out" }, at + 1.45);
+        hold = Math.max(hold, at + 1.8);
+      }
+      if (fx === "sun") {   // 周りの人＝太陽。その光を受けて芽が伸び、葉が出る
+        tl.to(sunDisc, { scale: 1, duration: 0.55, ease: "back.out(1.6)" }, tin - 0.05)
+          .to(SK, { light: 1, duration: 0.9, ease: "power1.inOut" }, tin + 0.1)   // 描いた太陽から、紙に本物の日の光が差す
+          .to(sunRays, { strokeDashoffset: 0, duration: 0.3, stagger: 0.025, ease: "power1.out" }, tin + 0.25)
+          .set(tip, { autoAlpha: 1 }, tin + 0.3)
+          .to(tip, { scale: 1, duration: 0.3, ease: "power2.out" }, tin + 0.3)
+          .to(stem, { strokeDashoffset: 33, duration: 1.1, ease: "power2.out" }, tin + 0.35)
+          .set(leaves[0], { autoAlpha: 1 }, tin + 0.62)
+          .to(leaves[0], { scale: 0.7, rotation: 0, duration: 0.6, ease: "back.out(1.4)" }, tin + 0.62)   // 茎が通り過ぎたところで、葉が開く
+          .set(leaves[1], { autoAlpha: 1 }, tin + 1.05)
+          .to(leaves[1], { scale: 0.7, rotation: 0, duration: 0.6, ease: "back.out(1.4)" }, tin + 1.05);
+        hold = Math.max(hold, tin + 1.5);
+      }
+      if (fx === "bloom") {   // 茎が伸びきってひまわりが咲き、種がこぼれて土に入る（今度は自分がまく番）
+        tl.to(stem, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, t + 0.25)
+          .to(leaves, { scale: 1, duration: 0.8, ease: "power2.out" }, t + 0.3)         // 葉も大きく育ちきる
+          .to(tip, { scale: 0, duration: 0.25, ease: "power2.in" }, t + 0.72)            // 芽は花に変わる
+          .set(tip, { autoAlpha: 0 }, t + 0.98)
+          .set(head, { autoAlpha: 1 }, t + 0.8)
+          .to(disc, { scale: 1, duration: 0.35, ease: "back.out(2)" }, t + 0.8)
+          .to(dots, { scale: 1, duration: 0.3, ease: "power2.out" }, t + 0.9)
+          .to(petals, { scale: 1, duration: 0.45, ease: "back.out(1.8)", stagger: 0.03 }, t + 0.9);
+        tl.to(head, { scaleY: 1, rotation: 0, duration: 0.75, ease: "power2.inOut" }, t + 1.75);   // 太陽からこちらへ向き直る＝今度は自分が照らす側
+        [-150, -82, -18, 34].forEach((dx, i) => {
+          const at = t + 2.55 + i * 0.14, f = falls[i];
+          tl.to(f, { opacity: 1, duration: 0.08 }, at)
+            .to(f, { x: dx, duration: 0.75, ease: "power1.out" }, at)
+            .to(f, { y: 226.5, rotation: 160 + i * 25, duration: 0.75, ease: "power2.in", transformOrigin: "50% 50%" }, at)
+            .to(f, { y: 234, rotation: 180, duration: 0.3, ease: "power2.inOut" }, at + 0.8);   // 半分だけ土に入る
+        });
+        hold = Math.max(hold, t + 2.55 + 3 * 0.14 + 1.15);
+      }
+      tl.addLabel(label, hold); order.push(label);
+      if (isLast) { tl.to({}, { duration: 0.01 }, hold); return hold; }   // 最後の印まで時間を伸ばしておく
+      tl.to(b, { autoAlpha: 0, y: -36, duration: 0.22, ease: "power2.in" }, hold + 0.02);
+      if (dark) tl.set(ink, { transformOrigin: "50% 0%" }, hold + 0.06).to(ink, { scaleY: 0, duration: 0.25, ease: "power2.inOut" }, hold + 0.06)
+                  .to([scNo, garden], { color: INK, duration: 0.2 }, hold + 0.1).to([scOf, hint], { color: INK2, duration: 0.2 }, hold + 0.1);
+      if (fx === "rain") tl.to(R, { rain: 0.24, tone: 1, duration: 0.3 }, hold + 0.06);   // 幕が下りても、小雨は残る
+      if (fx === "drizzle") tl.to(R, { rain: 0, duration: 0.45 }, hold + 0.02);         // 次の場面で、雨が止む
+      return hold + 0.3;
     };
-    let playing = null, touched = false;
+    // 書き直し：「薬剤師＝薬を作る人」 → 線 → 字が落ちる → 「気づける人」 → 蛍光ペン、と同時に種から芽が出る
+    const addRewrite = (t) => {
+      tl.set(rw, { autoAlpha: 1 }, t)
+        .fromTo(".rw-cap-a", { opacity: 0 }, { opacity: 1, duration: 0.2 }, t)
+        .fromTo(".rw-foot", { autoAlpha: 0 }, { autoAlpha: 0, duration: 0.01 }, t)
+        .to(headChars, { opacity: 1, duration: 0.06, stagger: { amount: 0.22 } }, t + 0.05)
+        .to(oldChars, { opacity: 1, duration: 0.06, stagger: { amount: 0.28 } }, t + 0.3)
+        .set(strikePath, { opacity: 1 }, t + 1.15)
+        .to(strikePath, { strokeDashoffset: 0, duration: 0.45, ease: "power1.inOut" }, t + 1.16);
+      // 地面の線までの距離（字の下の端から）。字は地面に落ちて、そこで消える
+      const toGround = (el) => Math.max(0, hz - (el.getBoundingClientRect().bottom - stageEl.getBoundingClientRect().top) - 1);
+      oldChars.forEach((c, i) => {
+        const dir = i % 2 ? 1 : -1, at = t + 1.75 + i * 0.05;
+        tl.to(c, { y: () => toGround(c), duration: 0.7, ease: "power2.in" }, at)
+          .to(c, { x: dir * (14 + Math.random() * 46), rotation: dir * (70 + Math.random() * 40), duration: 0.7, ease: "power1.out" }, at)
+          .to(c, { opacity: 0, duration: 0.3 }, at + 0.75);
+      });
+      tl.to(strike, { y: () => toGround(strike), rotation: -2, duration: 0.7, ease: "power2.in" }, t + 1.8)
+        .to(strike, { opacity: 0, duration: 0.3 }, t + 2.55)
+        .to(".rw-cap-a", { opacity: 0, duration: 0.15 }, t + 2.5)
+        .to(".rw-cap-b", { opacity: 1, duration: 0.15 }, t + 2.6)
+        .to(newChars, { opacity: 1, duration: 0.06, stagger: { amount: 0.36 } }, t + 2.7)
+        .to(mark, { backgroundSize: "100% 100%", duration: 0.45, ease: "power1.inOut" }, t + 3.2)
+        .to(stem, { strokeDashoffset: 91.5, duration: 0.4, ease: "power2.out" }, t + 3.25)
+        .set(coty, { autoAlpha: 1 }, t + 3.45)
+        .to(coty, { scale: 1, duration: 0.5, ease: "back.out(2.2)" }, t + 3.45)
+        .to(".rw-foot", { autoAlpha: 1, duration: 0.3 }, t + 3.6)
+        .addLabel("rewrite", t + 4.0);
+      order.push("rewrite");
+      tl.to(rw, { autoAlpha: 0, y: -30, duration: 0.3, ease: "power2.in" }, t + 4.02);
+      return t + 4.3;
+    };
+    const scenes = [...stageEl.querySelectorAll(".scene")].slice(1);
+    let t = 1.45, nb = 0;
+    scenes.forEach((sc, i) => {
+      if (sc === rw) t = addRewrite(t);
+      else { nb += 1; t = addBeat(sc, t, "b" + nb, i === scenes.length - 1); }
+    });
+
+    const cur = $(".sc-cur"), nextBtn = $(".ic-next"), skipBtn = $(".ic-skip");
+    scOf.textContent = "／" + String(order.length).padStart(2, "0");
+    const index = () => { let k = 0; order.forEach((l, i) => { if (tl.labels[l] <= tl.time() + 0.001) k = i; }); return k; };
+    const sync = (k = index()) => {
+      cur.textContent = String(k + 1).padStart(2, "0");
+      const last = k === order.length - 1;
+      nextBtn.textContent = last ? "ノートを開く ▸" : "次へ ▸";
+      skipBtn.hidden = last;          // 最後の場面では「飛ばす」は要らない（「ノートを開く」と同じになるため）
+    };
+    let playing = null, touched = false, booking = false, canceledAt = 0;
+    // 大空を見上げたあと、ふと手元に目を落とすと、一冊の本。少し間をおいて、ひらく
+    const tome = document.querySelector(".tome");
+    const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const scrollToY = (y, duration, done) => {
+      if (lenis) lenis.scrollTo(y, { duration, easing: ease, force: true, onComplete: done });
+      else { window.scrollTo({ top: y, behavior: "smooth" }); setTimeout(done, duration * 1000); }
+    };
+    const jumpTo = (y) => { if (lenis) lenis.scrollTo(y, { immediate: true, force: true }); else window.scrollTo(0, y); };
+    const openBook = (fromSky) => {
+      if (booking) return;
+      const st = window.ScrollTrigger && ScrollTrigger.getAll().find((x) => x.trigger === opening);
+      const veil = document.querySelector(".veil");
+      if (!tome || !st || !veil || !root.classList.contains("book")) { goTo(opening, 0); return; }
+      booking = true;
+      const ctrl = $(".intro-ctrl"), lastScene = scenes[scenes.length - 1];
+      const seq = gsap.timeline();
+      const finish = () => {
+        booking = false;
+        opening.classList.remove("held");
+        gsap.set(ctrl, { autoAlpha: 1 });
+        removeEventListener("touchstart", cancel); removeEventListener("wheel", cancel);
+      };
+      // 自動で動いている途中に画面にふれたら、そこで止めて操作を返す
+      const cancel = () => {
+        if (!booking) return;
+        canceledAt = performance.now();
+        seq.kill();
+        if (lenis) lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+        gsap.to(veil, { autoAlpha: 0, duration: 0.25 });
+        gsap.killTweensOf(tome); gsap.set(tome, { clearProps: "transform" });
+        gsap.set([lastScene, scNo], { autoAlpha: 1 });
+        finish();
+      };
+      addEventListener("touchstart", cancel, { passive: true });
+      addEventListener("wheel", cancel, { passive: true });
+      // 1. 最後の一文が消えて、少しのあいだ空だけを見る
+      seq.to([ctrl, scNo], { autoAlpha: 0, duration: 0.3 }, 0);
+      if (fromSky) seq.to(lastScene, { autoAlpha: 0, duration: 0.5 }, 0);
+      const at = fromSky ? 1.0 : 0.15;
+      // 2. 空の光が紙色に満ちて（はじめの「電球の光が紙になる」と対）、そのあいだに本の前へ移る
+      seq.to(veil, { autoAlpha: 1, duration: 0.75, ease: "power1.inOut" }, at)
+        .add(() => {
+          jumpTo(st.start + 1);   // ピンの境目の1px内側（固定と解除が入れ替わらない位置）
+          gsap.set([lastScene, scNo], { autoAlpha: 1 });   // 見えていないうちに、はじめの場面を元に戻す
+          opening.classList.add("held");
+          gsap.set(tome, { y: 30, scale: 0.975, transformOrigin: "50% 100%" });
+        }, at + 0.78)
+        // 3. ふと手元を見ると、一冊の本。目のピントが合うように、本が少し持ち上がって落ち着く
+        .to(veil, { autoAlpha: 0, duration: 0.85, ease: "power1.inOut" }, at + 0.9)
+        .to(tome, { y: 0, scale: 1, duration: 1.2, ease: "power2.out", onComplete: () => gsap.set(tome, { clearProps: "transform" }) }, at + 0.9)
+        // 4. 表紙の名前が書き終わったら、表紙がひらく
+        .add(() => scrollToY(st.end - 2, 1.8, () => { if (booking) finish(); }), at + 3.1);
+    };
     const next = () => {
+      if (booking || performance.now() - canceledAt < 700) return;   // 本へ向かう途中のタップは、止める合図としてだけ使う
       if (!touched) { touched = true; gsap.to(hint, { autoAlpha: 0, duration: 0.3 }); }
-      if (gatherTw && gatherTw.isActive()) { gatherTw.progress(1); return; }       // まず今の場面を最後まで
+      if (intro.isActive()) { intro.progress(1); return; }                    // まず今の場面を最後まで
       if (playing && playing.isActive()) { playing.progress(1); return; }
       const k = index();
-      if (k >= order.length - 1) { goTo(opening, 0); return; }
+      if (k >= order.length - 1) { openBook(true); return; }
       sync(k + 1);
       playing = tl.tweenTo(order[k + 1]);
     };
@@ -816,7 +1359,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
       if (e.clientX < stageEl.clientWidth * 0.22 && index() > 0) prev(); else next();
     });
     nextBtn.addEventListener("click", next);
-    $(".ic-skip").addEventListener("click", () => goTo(opening, 0));
+    skipBtn.addEventListener("click", () => openBook(false));
     let inView = true;
     new IntersectionObserver(([e]) => { inView = e.intersectionRatio > 0.5; }, { threshold: [0, 0.5, 1] }).observe(stageEl);
     addEventListener("keydown", (e) => {
@@ -853,7 +1396,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
         // スマホ：背の位置で真横になったところで表紙を消す。画面の外へ左に流れていく動きは見せない
         tl.to(cover, { rotationY: -92, ease: "power1.in", duration: 0.75 }, 0)
           .to(".front .shade", { opacity: 0.16, ease: "power1.in", duration: 0.75 }, 0)
-          .set(cover, { autoAlpha: 0 }, 0.75);
+          .to(cover, { autoAlpha: 0, duration: 0.1 }, 0.65);   // 真横になる手前で、すっと消える
       } else {
         // PC：180度ひらいて、左に見返しが寝た見開きで止まる
         tl.to(cover, { rotationY: -180, ease: "power1.inOut", duration: 0.75 }, 0)
@@ -911,5 +1454,6 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
   });
 })();
 </script>
+<div class="veil" aria-hidden="true"></div>
 </body>
 </html>
