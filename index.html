@@ -244,10 +244,17 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
 .seeds-on .logo-fb { visibility: hidden; }
 .seeds-off .sn-en { position: static; margin: 1.4svh 0 0; }
 /* はじめの場面の進み具合：数字にすると本のページ数（全7ページ）とまぎれるので、目盛りで見せる */
-.stage-on .sc-no { display: flex; gap: 4px; position: absolute; top: max(28px, calc(env(safe-area-inset-top) + 14px)); right: max(20px, 7vw, env(safe-area-inset-right)); z-index: 6; margin: 0; color: var(--paper); }
+.stage-on .sc-no { display: flex; gap: 4px; position: absolute; top: max(48px, calc(env(safe-area-inset-top) + 34px)); right: max(20px, 7vw, env(safe-area-inset-right)); z-index: 6; margin: 0; color: var(--paper); }
 .stage-on .sc-no i { width: 9px; height: 2px; background: currentColor; opacity: .22; transition: opacity .3s, width .3s var(--ease); }
 .stage-on .sc-no i.done { opacity: .55; }
 .stage-on .sc-no i.on { width: 18px; opacity: 1; }
+/* 目盛りの上を歩く小さな人。物語に合わせて、運ぶ・うつむく・座りこむ・見上げる・手をふる */
+.walker { position: absolute; left: 0; bottom: 2px; width: 20px; height: 26px; overflow: visible; pointer-events: none; }
+.walker path, .walker circle { fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.walker .wk-melon path { stroke-width: 1.1; }
+.walker .wk-melon .seed { fill: currentColor; stroke: none; }
+.walker .wk-idea .bulb { fill: var(--marker); stroke-width: 1; }
+.walker .wk-idea path { stroke-width: 1; }
 .stage-on .rw-new { position: absolute; left: 0; top: 0; }
 .stage-on .rw-cap-b { display: inline; position: absolute; left: 0; top: 0; opacity: 0; }
 .stage-on .rw-strike path { stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0; }
@@ -263,7 +270,7 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
 @media (min-width: 720px) {
   .sn-sub { top: max(30px, calc(env(safe-area-inset-top) + 12px)); font-size: 17px; }
   .sn-foot { bottom: max(28px, calc(env(safe-area-inset-bottom) + 12px)); }
-  .stage-on .sc-no { top: max(32px, calc(env(safe-area-inset-top) + 14px)); }
+  .stage-on .sc-no { top: max(52px, calc(env(safe-area-inset-top) + 34px)); }
   .stage-on .intro-ctrl { bottom: max(26px, calc(env(safe-area-inset-bottom) + 10px)); }
   .idea-big { font-size: min(9vw, 15svh); }
 }
@@ -1017,6 +1024,113 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
     return S;
   };
 
+  // ---- 目盛りの上を歩く小さな人：場面が進むと次の目盛りまで歩き、話に合わせた姿勢になる ----
+  const createWalker = (bar) => {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "walker"); svg.setAttribute("viewBox", "-11 -27 22 28"); svg.setAttribute("aria-hidden", "true");
+    // 関節ごとに入れ子にして、回転は自分で書く（足の付け根・ひざ・肩・頭）
+    svg.innerHTML = `<g class="wk-flip"><g class="wk-grow"><g class="wk-body">
+      <g transform="translate(0 -8.4)">
+        <g class="wk-thighL"><path d="M0 0 L0 4.3"/><g transform="translate(0 4.3)"><g class="wk-shinL"><path d="M0 0 L0 4.1"/></g></g></g>
+        <g class="wk-thighR"><path d="M0 0 L0 4.3"/><g transform="translate(0 4.3)"><g class="wk-shinR"><path d="M0 0 L0 4.1"/></g></g></g>
+      </g>
+      <g class="wk-upper">
+        <path d="M0 -8.4 L0 -15.6"/>
+        <g transform="translate(0 -14.6)">
+          <g class="wk-armL"><path d="M0 0 L0 6.2"/></g>
+          <g class="wk-armR"><path d="M0 0 L0 6.2"/></g>
+          <g class="wk-melon"><path d="M3.2 -1.6 A 3.3 3.3 0 0 0 9.8 -1.6 Z"/><circle class="seed" cx="5.6" cy="-0.6" r="0.45"/><circle class="seed" cx="7.4" cy="-0.6" r="0.45"/></g>
+        </g>
+        <path class="wk-bag" d="M-1 -14.6 L-4 -14 L-4 -9.8 L-1 -10.2"/>
+        <g class="wk-head"><circle cx="0" cy="-19.4" r="3.1"/></g>
+        <g class="wk-idea"><path class="bulb" d="M0 -31.6 C 2.6 -31.6, 3.4 -28.4, 1.4 -26.6 L 1.2 -25.4 L -1.2 -25.4 L -1.4 -26.6 C -3.4 -28.4, -2.6 -31.6, 0 -31.6 Z"/><path d="M-1 -24.4 L1 -24.4"/><path class="ray" d="M-4.6 -31 L-3.6 -30.2 M4.6 -31 L3.6 -30.2 M0 -34.6 L0 -33.4"/></g>
+      </g>
+    </g></g></g>`;
+    bar.appendChild(svg);
+    const q = (c) => svg.querySelector("." + c);
+    const el = { flip: q("wk-flip"), grow: q("wk-grow"), bag: q("wk-bag"), idea: q("wk-idea"), body: q("wk-body"), upper: q("wk-upper"), head: q("wk-head"), thighL: q("wk-thighL"), thighR: q("wk-thighR"), shinL: q("wk-shinL"), shinR: q("wk-shinR"), armL: q("wk-armL"), armR: q("wk-armR"), melon: q("wk-melon") };
+    // 角度は「まっすぐ下」が0。正の値で後ろへ、負の値で前へ（右を向いているとき）
+    const POSE = {
+      stand:  { bx: 0, by: 0, br: 0, hx: 0, hy: 0, thighL: -7, thighR: 7, shinL: 0, shinR: 0, armL: -16, armR: 16, melon: 0, swing: 1 },
+      carry:  { bx: 0, by: 0, br: -3, hx: 0, hy: 0, thighL: -6, thighR: 6, shinL: 0, shinR: 0, armL: -62, armR: -52, melon: 1, swing: 0 },   // スイカを持っていく
+      bow:    { bx: 0, by: 0.3, br: 17, hx: 1, hy: 2, thighL: -4, thighR: 4, shinL: 0, shinR: 0, armL: -10, armR: 6, melon: 0, swing: 0.3 },   // 雨の中でうつむく
+      crouch: { bx: -1.5, by: 7.6, br: 20, hx: 1.4, hy: 1.8, thighL: -125, thighR: -112, shinL: 130, shinR: 118, armL: -48, armR: -36, melon: 0, swing: 0 },   // ひざを抱えて座りこむ
+      lookup: { bx: 0, by: 0, br: -9, hx: -0.9, hy: -0.7, thighL: -7, thighR: 7, shinL: 0, shinR: 0, armL: -128, armR: 14, melon: 0, swing: 0.6 },   // 太陽を見上げて、指さす
+      wave:   { bx: 0, by: 0, br: 0, hx: 0, hy: 0, thighL: -7, thighR: 7, shinL: 0, shinR: 0, armL: -150, armR: 16, melon: 0, swing: 0 },   // こちらへ手をふる
+    };
+    const cur = Object.assign({}, POSE.stand), st = { x: 9, face: 1, walk: 0, wave: 0, grow: 0, idea: 0, jump: 0, run: 0 };
+    let phase = 0, last = performance.now(), moving = null, poseTw = null, waveTw = null;
+    const render = () => {
+      const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
+      if (st.walk > 0.001) phase += dt * Math.PI * 2 * (1.9 + 0.6 * (1 - st.grow) + st.run * 1.8);   // 1秒にほぼ2歩（子どものうちは小刻みに、走るときは倍近く）
+      const w = st.walk, sn = Math.sin(phase), sw = cur.swing;
+      const a = {
+        thighL: cur.thighL + w * 24 * sn, thighR: cur.thighR - w * 24 * sn,
+        shinL: cur.shinL + w * Math.max(0, -sn) * 34, shinR: cur.shinR + w * Math.max(0, sn) * 34,
+        armL: cur.armL - w * sw * 20 * sn + st.wave * 16 * Math.sin(now / 130), armR: cur.armR + w * sw * 20 * sn,
+      };
+      const idle = (1 - w) * 0.22 * Math.sin(now / 650);   // 立っているときの、かすかな息づかい
+      const bob = -w * (0.7 + st.run * 0.6) * Math.abs(Math.cos(phase)) - st.jump * 3.6 + idle;
+      svg.style.transform = `translateX(${(st.x - 10).toFixed(2)}px)`;
+      el.flip.setAttribute("transform", `scale(${st.face} 1)`);
+      // 中学生（小さく、頭が大きめ、かばん）→ 高校生 → 大学生（かばんがなくなる）→ いま、と少しずつ背がのびる。足もとを基準に大きくなる
+      const g = st.grow, sc = 0.7 + 0.3 * g, hs = 1.2 - 0.2 * g;
+      el.grow.setAttribute("transform", `scale(${sc.toFixed(3)})`);
+      el.bag.style.opacity = Math.min(1, Math.max(0, (0.55 - g) / 0.12)).toFixed(2);
+      el.idea.setAttribute("transform", `translate(0 -24.5) scale(${st.idea.toFixed(3)}) translate(0 24.5)`);
+      el.idea.style.opacity = Math.min(1, st.idea * 1.4).toFixed(2);
+      el.body.setAttribute("transform", `translate(${cur.bx.toFixed(2)} ${(cur.by + bob).toFixed(2)})`);
+      el.upper.setAttribute("transform", `rotate(${cur.br.toFixed(1)} 0 -8.4)`);   // 上半身だけを、腰から傾ける
+      el.head.setAttribute("transform", `translate(${cur.hx.toFixed(2)} ${cur.hy.toFixed(2)}) translate(0 -19.4) scale(${hs.toFixed(3)}) translate(0 19.4)`);
+      ["thighL", "thighR", "shinL", "shinR", "armL", "armR"].forEach((k) => el[k].setAttribute("transform", `rotate(${a[k].toFixed(1)})`));
+      el.melon.style.opacity = cur.melon.toFixed(2);
+    };
+    gsap.ticker.add(render);
+    const NAMES = ["stand", "stand", "stand", "carry", "bow", "crouch", "stand", "lookup", "wave"];
+    const setPose = (name, dur = 0.45) => {
+      if (poseTw) poseTw.kill();
+      poseTw = gsap.to(cur, Object.assign({ duration: dur, ease: "power2.inOut" }, POSE[name]));
+      if (waveTw) { waveTw.kill(); waveTw = null; }
+      gsap.to(st, { wave: name === "wave" ? 1 : 0, duration: 0.3, delay: name === "wave" ? dur : 0 });
+    };
+    // k 番目の目盛りの真ん中（いまの目盛りは幅18px、ほかは9px、間は4px）
+    const tickX = (k) => k * 13 + 9;
+    const to = (k) => {
+      const name = NAMES[Math.min(k, NAMES.length - 1)], x = tickX(k), dist = x - st.x;
+      if (moving) moving.kill();
+      if (Math.abs(dist) < 0.5) { setPose(name); return; }
+      const slow = name === "bow" || name === "crouch";   // 悲しい場面では、とぼとぼ歩く
+      const dur = Math.abs(dist) / (slow ? 15 : 26);
+      const wasDown = cur.by > 3;   // 座りこんでいたら、まず立ち上がる
+      st.face = dist > 0 ? 1 : -1;
+      moving = gsap.timeline();
+      if (wasDown) moving.add(() => setPose("stand", 0.35)).to({}, { duration: 0.35 });
+      moving.add(() => { if (name === "carry") setPose("carry", 0.3); else if (cur.melon > 0.5 || cur.armL < -100) setPose("stand", 0.3); })
+        .to(st, { walk: 1, duration: 0.2 })
+        .to(st, { x, duration: dur, ease: "none" }, "<")
+        .to(st, { walk: 0, duration: 0.2 }, ">-0.12")
+        .add(() => { st.face = name === "wave" ? -1 : 1; setPose(name); });   // 手をふるときは、文字のある左（こちら側）を向く
+    };
+    // 電球が灯った瞬間に、ぴょんと跳ねる
+    const hop = () => gsap.fromTo(st, { jump: 0 }, { jump: 1, duration: 0.17, ease: "power2.out", yoyo: true, repeat: 1 });
+    // 「ノートを開く」で、右へ走って画面の外（次の章）へ
+    const exit = () => {
+      if (moving) moving.kill();
+      setPose("stand", 0.2);
+      st.face = 1;
+      moving = gsap.timeline().to(st, { walk: 1, run: 1, duration: 0.15 }).to(st, { x: st.x + 70, duration: 0.9, ease: "power1.in" }, "<");
+    };
+    // 見えていないうちに、k 番目の目盛りへ置きなおす
+    const place = (k) => {
+      if (moving) moving.kill();
+      Object.assign(st, { x: tickX(k), walk: 0, run: 0, face: NAMES[k] === "wave" ? -1 : 1 });
+      setPose(NAMES[Math.min(k, NAMES.length - 1)], 0.01);
+    };
+    render();
+    return { to, pose: setPose, hop, exit, place, st };
+  };
+
   // ---- はじめに：タップ（クリック、→キー）で場面が進む。←や画面の左端で戻る ----
   const buildStage = () => {
     const stageEl = document.querySelector(".stage");
@@ -1146,6 +1260,8 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
     // 場面の流れを1本のタイムラインにして、場面ごとに印（ラベル）を付ける
     const rw = $(".rewrite");
     const scNo = $(".sc-no"), hint = $(".intro-hint");
+    const walker = createWalker(scNo);
+    if (seeds) intro.call(() => walker.hop(), null, 3.08);   // ロゴの電球が灯った瞬間
     const headChars = mkChars(rw.querySelector(".rw-a"), "ic");
     const oldEl = rw.querySelector(".rw-old"), strike = oldEl.querySelector(".rw-strike"), strikePath = strike.querySelector("path");
     const oldChars = mkChars(oldEl, "fc");
@@ -1213,6 +1329,7 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
           .set(tip, { autoAlpha: 1 }, tin + 0.3)
           .to(tip, { scale: 1, duration: 0.3, ease: "power2.out" }, tin + 0.3)
           .to(stem, { strokeDashoffset: 33, duration: 1.1, ease: "power2.out" }, tin + 0.35)
+          .to(walker.st, { grow: 1, duration: 1.1, ease: "power2.out" }, tin + 0.35)   // 日の光を受けて、芽といっしょに背がのびきる（ここまで来ました）
           .set(leaves[0], { autoAlpha: 1 }, tin + 0.62)
           .to(leaves[0], { scale: 0.7, rotation: 0, duration: 0.6, ease: "back.out(1.4)" }, tin + 0.62)   // 茎が通り過ぎたところで、葉が開く
           .set(leaves[1], { autoAlpha: 1 }, tin + 1.05)
@@ -1249,7 +1366,8 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
     };
     // 書き直し：「薬剤師＝薬を作る人」 → 線 → 字が落ちる → 「気づける人」 → 蛍光ペン、と同時に種から芽が出る
     const addRewrite = (t) => {
-      tl.set(rw, { autoAlpha: 1 }, t)
+      tl.to(walker.st, { grow: 0.3, duration: 0.8, ease: "power1.inOut" }, t - 0.1)   // あの日から、年月がたつ（中学生 → 高校生）
+        .set(rw, { autoAlpha: 1 }, t)
         .fromTo(".rw-cap-a", { opacity: 0 }, { opacity: 1, duration: 0.2 }, t)
         .fromTo(".rw-foot", { autoAlpha: 0 }, { autoAlpha: 0, duration: 0.01 }, t)
         .to(headChars, { opacity: 1, duration: 0.06, stagger: { amount: 0.22 } }, t + 0.05)
@@ -1268,15 +1386,18 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
         .to(strike, { opacity: 0, duration: 0.3 }, t + 2.55)
         .to(".rw-cap-a", { opacity: 0, duration: 0.15 }, t + 2.5)
         .to(".rw-cap-b", { opacity: 1, duration: 0.15 }, t + 2.6)
+        .to(walker.st, { grow: 0.7, duration: 0.9, ease: "back.out(1.6)" }, t + 2.6)   // 「いま」へ：ぐっと背がのびて、かばんがなくなる（高校生 → 大学生）
         .to(newChars, { opacity: 1, duration: 0.06, stagger: { amount: 0.36 } }, t + 2.7)
         .to(mark, { backgroundSize: "100% 100%", duration: 0.45, ease: "power1.inOut" }, t + 3.2)
+        .to(walker.st, { idea: 1, duration: 0.4, ease: "back.out(2.4)" }, t + 3.2)   // 気づいた！（頭の上に、小さな電球）
         .to(stem, { strokeDashoffset: 91.5, duration: 0.4, ease: "power2.out" }, t + 3.25)
         .set(coty, { autoAlpha: 1 }, t + 3.45)
         .to(coty, { scale: 1, duration: 0.5, ease: "back.out(2.2)" }, t + 3.45)
         .to(".rw-foot", { autoAlpha: 1, duration: 0.3 }, t + 3.6)
         .addLabel("rewrite", t + 4.0);
       order.push("rewrite");
-      tl.to(rw, { autoAlpha: 0, y: -30, duration: 0.3, ease: "power2.in" }, t + 4.02);
+      tl.to(rw, { autoAlpha: 0, y: -30, duration: 0.3, ease: "power2.in" }, t + 4.02)
+        .to(walker.st, { idea: 0, duration: 0.3 }, t + 4.02);
       return t + 4.3;
     };
     const scenes = [...stageEl.querySelectorAll(".scene")].slice(1);
@@ -1292,6 +1413,7 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
     const sync = (k = index()) => {
       ticks.forEach((tk, i) => { tk.className = i < k ? "done" : i === k ? "on" : ""; });
       scNo.dataset.k = k + 1;
+      walker.to(k);
       const last = k === order.length - 1;
       nextBtn.textContent = last ? "ノートを開く ▸" : "次へ ▸";
       skipBtn.hidden = last;          // 最後の場面では「飛ばす」は要らない（「ノートを開く」と同じになるため）
@@ -1328,12 +1450,14 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
         gsap.to(veil, { autoAlpha: 0, duration: 0.25 });
         gsap.killTweensOf(tome); gsap.set(tome, { clearProps: "transform" });
         gsap.set([lastScene, scNo], { autoAlpha: 1 });
+        walker.place(order.length - 1);
         finish();
       };
       addEventListener("touchstart", cancel, { passive: true });
       addEventListener("wheel", cancel, { passive: true });
       // 1. 最後の一文が消えて、少しのあいだ空だけを見る
-      seq.to([ctrl, scNo], { autoAlpha: 0, duration: 0.3 }, 0);
+      walker.exit();
+      seq.to(ctrl, { autoAlpha: 0, duration: 0.3 }, 0).to(scNo, { autoAlpha: 0, duration: 0.3 }, 0.6);
       if (fromSky) seq.to(lastScene, { autoAlpha: 0, duration: 0.5 }, 0);
       const at = fromSky ? 1.0 : 0.15;
       // 2. 空の光が紙色に満ちて（はじめの「電球の光が紙になる」と対）、そのあいだに本の前へ移る
@@ -1341,6 +1465,7 @@ mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image
         .add(() => {
           jumpTo(st.start + 1);   // ピンの境目の1px内側（固定と解除が入れ替わらない位置）
           gsap.set([lastScene, scNo], { autoAlpha: 1 });   // 見えていないうちに、はじめの場面を元に戻す
+          walker.place(order.length - 1);
           opening.classList.add("held");
           gsap.set(tome, { y: 30, scale: 0.975, transformOrigin: "50% 100%" });
         }, at + 0.78)
