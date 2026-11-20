@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="only light">
 <title>ねむ | 気づきの種を育てる薬学生</title>
 <meta name="description" content="田舎の薬学部で学ぶ薬学生・ねむの自己紹介。なりたい薬剤師、これからの生き方、いま取り組んでいること。">
 <meta name="theme-color" content="#F6F3EA">
@@ -39,7 +40,7 @@
   --dash: 560;
   --ease: cubic-bezier(.4, 0, .2, 1);
   --ease-out: cubic-bezier(.2, 0, 0, 1);
-  color-scheme: light;
+  color-scheme: only light;   /* 端末の「サイトを暗くする」機能で色が反転し、蛍光ペンの上の字が読めなくなるのを防ぐ */
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; touch-action: pan-y pinch-zoom; }
@@ -113,7 +114,8 @@ main { margin-top: 30px; }
 .aims b::before { content: counter(aim, cjk-decimal) "、"; display: inline-block; width: 2em; font-weight: 900; }
 .aims p { margin: 3px 0 0 36px; font-size: 14.5px; text-align: justify; }
 /* 蛍光ペン。行をまたいでも一本の線として左から引けるよう、背景は行で切らない */
-mark { color: inherit; background-color: transparent; background-image: linear-gradient(transparent 56%, var(--marker) 56%, var(--marker) 92%, transparent 92%); background-repeat: no-repeat; background-size: 100% 100%; padding: 0 1px; }
+/* 蛍光ペン。透明は「黄色の透明」で書く（透明を黒として描く画面変換でも、黒い帯にならないように） */
+mark { color: inherit; background-color: rgba(255, 201, 60, 0); background-image: linear-gradient(rgba(255, 201, 60, 0) 56%, var(--marker) 56%, var(--marker) 92%, rgba(255, 201, 60, 0) 92%); background-repeat: no-repeat; background-size: 100% 100%; padding: 0 1px; }
 
 /* いま取り組んでいること */
 .proj h3 { margin: 0; display: flex; align-items: baseline; gap: 10px; font: 700 20px/1.4 var(--mincho); }
@@ -241,8 +243,11 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 .stage-on .sn-en { position: absolute; left: 0; right: 0; top: 0; margin: 0; opacity: 0; }
 .seeds-on .logo-fb { visibility: hidden; }
 .seeds-off .sn-en { position: static; margin: 1.4svh 0 0; }
-.stage-on .sc-no { display: block; position: absolute; top: max(24px, calc(env(safe-area-inset-top) + 12px)); right: max(20px, 7vw, env(safe-area-inset-right)); z-index: 6; margin: 0; font: 700 12px/1 var(--mono); letter-spacing: .06em; color: var(--paper); }
-.stage-on .sc-no .sc-of { font-weight: 400; color: rgba(246, 243, 234, .6); }
+/* はじめの場面の進み具合：数字にすると本のページ数（全7ページ）とまぎれるので、目盛りで見せる */
+.stage-on .sc-no { display: flex; gap: 4px; position: absolute; top: max(28px, calc(env(safe-area-inset-top) + 14px)); right: max(20px, 7vw, env(safe-area-inset-right)); z-index: 6; margin: 0; color: var(--paper); }
+.stage-on .sc-no i { width: 9px; height: 2px; background: currentColor; opacity: .22; transition: opacity .3s, width .3s var(--ease); }
+.stage-on .sc-no i.done { opacity: .55; }
+.stage-on .sc-no i.on { width: 18px; opacity: 1; }
 .stage-on .rw-new { position: absolute; left: 0; top: 0; }
 .stage-on .rw-cap-b { display: inline; position: absolute; left: 0; top: 0; opacity: 0; }
 .stage-on .rw-strike path { stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0; }
@@ -289,6 +294,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 /* はじめの場面の終わり：空の光が紙になって、手元の本に切りかわる（スクロールで流さない） */
 .veil { position: fixed; inset: 0; z-index: 60; background: var(--paper); opacity: 0; visibility: hidden; pointer-events: none; }
 .folio.on { opacity: 1; transform: none; pointer-events: auto; }
+.folio.on.tuck { opacity: 0; transform: translateY(10px); pointer-events: none; }
 .folio-no { position: relative; display: inline-block; width: 2ch; height: 1.1em; overflow: hidden; }
 .folio-no span { position: absolute; left: 0; top: 0; line-height: 1.1em; }
 .folio-no .to-above, .folio-no .from-above { transform: translateY(-105%); }
@@ -305,12 +311,15 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 .motion .opening.in .sticker { animation: stick .5s var(--ease-out) 1.65s both; }
 .motion .opening.in .sticker.again { animation: restick .45s var(--ease) both; }
 /* ページ：定規で罫を引き、見出しを左から書き込む */
-.motion .page .pg-head::after { transform: scaleX(0); transition: transform .9s var(--ease); }
+.motion .page .pg-head::after { transform: scaleX(0); transition: transform .6s var(--ease); }
 .motion .page.in .pg-head::after { transform: none; }
 /* 見出しは一文字ずつ書く（文字の間隔は合計0.5秒以内） */
-.motion .ch { opacity: 0; transition: opacity .22s var(--ease-out) calc(var(--lead, 0ms) + var(--i) * var(--step, 40ms)); }
+.motion .ch { opacity: 0; transition: opacity .18s var(--ease-out) calc(var(--lead, 0ms) + var(--i) * var(--step, 24ms)); }
 .motion .page.in h2 .ch, .motion .turn.in .ch { opacity: 1; }
-.motion .ruled { background-size: 0% var(--pitch); transition: background-size .9s var(--ease) .1s; }
+.motion .page.now h2 .ch, .motion .turn.now .ch { transition-delay: 0s; transition-duration: .15s; }
+.motion .ruled.now, .motion .page.now .pg-head::after { transition-duration: .25s; transition-delay: 0s; }
+.motion mark.now { transition-delay: 0s; transition-duration: .4s; }
+.motion .ruled { background-size: 0% var(--pitch); transition: background-size .6s var(--ease); }
 .motion .ruled.in { background-size: 100% var(--pitch); }
 /* 物語の転換の一行だけ、間をおいてゆっくり書く */
 .motion mark { background-size: 0% 100%; transition: background-size .9s var(--ease) .3s; }
@@ -382,7 +391,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
   </div>
   <canvas class="seeds" aria-hidden="true"></canvas>
   <canvas class="rain" aria-hidden="true"></canvas>
-  <p class="sc-no" aria-hidden="true"><span class="sc-cur">01</span><span class="sc-of">／09</span></p>
+  <p class="sc-no" aria-hidden="true"></p>
   <div class="scene s-idea">
     <p class="sn-sub">気づきの種を育てる</p>
     <div class="logo-fb"><img src="data:image/webp;base64,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" alt="" width="96" height="96"><p class="idea-big"><span class="nb">薬の</span><span class="nb o">アイデア</span></p></div>
@@ -580,7 +589,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
     return i;
   };
   if (motion) {
-    document.querySelectorAll(".page h2").forEach((h) => split(h, (n) => Math.min(40, Math.floor(480 / n)), 150));
+    document.querySelectorAll(".page h2").forEach((h) => split(h, (n) => Math.min(24, Math.floor(260 / n)), 40));
     const parts = document.querySelectorAll(".turn > span");
     if (parts.length === 2) {
       const n0 = split(parts[0], 90, 500);
@@ -594,8 +603,13 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
   if (!hasIO) { once.forEach((el) => el.classList.add("in")); loops.forEach((el) => el.classList.add("in")); }
   else {
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
-    }, { rootMargin: "0px 0px -12% 0px" });
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        // 速くスクロールして、気づいたときにはもう画面の中ほどにあるものは、待たせずにすぐ出す
+        if (e.boundingClientRect.top < innerHeight * 0.8) e.target.classList.add("now");
+        e.target.classList.add("in"); io.unobserve(e.target);
+      });
+    }, { rootMargin: "0px 0px 10% 0px" });   // 画面に入る少し手前で書き始める（速くスクロールしても途中で切れて見えない）
     once.forEach((el) => io.observe(el));
     const lo = new IntersectionObserver((entries) => {
       entries.forEach((e) => e.target.classList.toggle("in", e.isIntersecting));
@@ -1131,7 +1145,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
 
     // 場面の流れを1本のタイムラインにして、場面ごとに印（ラベル）を付ける
     const rw = $(".rewrite");
-    const scNo = $(".sc-no"), scOf = $(".sc-of"), hint = $(".intro-hint");
+    const scNo = $(".sc-no"), hint = $(".intro-hint");
     const headChars = mkChars(rw.querySelector(".rw-a"), "ic");
     const oldEl = rw.querySelector(".rw-old"), strike = oldEl.querySelector(".rw-strike"), strikePath = strike.querySelector("path");
     const oldChars = mkChars(oldEl, "fc");
@@ -1151,7 +1165,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
       .to(S, { ink: 1, duration: 0.6 }, 0.45)
       .to(S, { light: 0, surge: 0, duration: 0.5 }, 0.62)
       .to(S, { scatter: 1, duration: 1.2, ease: "none" }, 0.7)   // ロゴの粒が紺の粒になって、地面に落ちていく
-      .to(scNo, { color: INK, duration: 0.3 }, 0.7).to(scOf, { color: INK2, duration: 0.3 }, 0.7).to(hint, { color: INK2, duration: 0.3 }, 0.7);
+      .to(scNo, { color: INK, duration: 0.3 }, 0.7).to(hint, { color: INK2, duration: 0.3 }, 0.7);
     if (!seeds) tl.to(".logo-fb", { autoAlpha: 0, duration: 0.3 }, 0.5).to(halo, { opacity: 0, duration: 0.5 }, 0.62);
 
     // 1画面に1文。背景の動きは場面の data-fx で決める
@@ -1162,7 +1176,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
       let tin = t;
       if (dark) {   // 紺の幕が下から上がる
         tl.set(ink, { transformOrigin: "50% 100%" }, t).to(ink, { scaleY: 1, duration: 0.3, ease: "power2.inOut" }, t)
-          .to([scNo, garden], { color: PAPER, duration: 0.2 }, t + 0.15).to([scOf, hint], { color: PAPER2, duration: 0.2 }, t + 0.15);
+          .to([scNo, garden], { color: PAPER, duration: 0.2 }, t + 0.15).to(hint, { color: PAPER2, duration: 0.2 }, t + 0.15);
         tin = t + 0.25;
       }
       if (fx === "rain") {   // 幕が上がりきったところで、一気に雨が降る
@@ -1228,7 +1242,7 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
       if (isLast) { tl.to({}, { duration: 0.01 }, hold); return hold; }   // 最後の印まで時間を伸ばしておく
       tl.to(b, { autoAlpha: 0, y: -36, duration: 0.22, ease: "power2.in" }, hold + 0.02);
       if (dark) tl.set(ink, { transformOrigin: "50% 0%" }, hold + 0.06).to(ink, { scaleY: 0, duration: 0.25, ease: "power2.inOut" }, hold + 0.06)
-                  .to([scNo, garden], { color: INK, duration: 0.2 }, hold + 0.1).to([scOf, hint], { color: INK2, duration: 0.2 }, hold + 0.1);
+                  .to([scNo, garden], { color: INK, duration: 0.2 }, hold + 0.1).to(hint, { color: INK2, duration: 0.2 }, hold + 0.1);
       if (fx === "rain") tl.to(R, { rain: 0.24, tone: 1, duration: 0.3 }, hold + 0.06);   // 幕が下りても、小雨は残る
       if (fx === "drizzle") tl.to(R, { rain: 0, duration: 0.45 }, hold + 0.02);         // 次の場面で、雨が止む
       return hold + 0.3;
@@ -1272,11 +1286,12 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
       else { nb += 1; t = addBeat(sc, t, "b" + nb, i === scenes.length - 1); }
     });
 
-    const cur = $(".sc-cur"), nextBtn = $(".ic-next"), skipBtn = $(".ic-skip");
-    scOf.textContent = "／" + String(order.length).padStart(2, "0");
+    const nextBtn = $(".ic-next"), skipBtn = $(".ic-skip");
+    const ticks = order.map(() => scNo.appendChild(document.createElement("i")));
     const index = () => { let k = 0; order.forEach((l, i) => { if (tl.labels[l] <= tl.time() + 0.001) k = i; }); return k; };
     const sync = (k = index()) => {
-      cur.textContent = String(k + 1).padStart(2, "0");
+      ticks.forEach((tk, i) => { tk.className = i < k ? "done" : i === k ? "on" : ""; });
+      scNo.dataset.k = k + 1;
       const last = k === order.length - 1;
       nextBtn.textContent = last ? "ノートを開く ▸" : "次へ ▸";
       skipBtn.hidden = last;          // 最後の場面では「飛ばす」は要らない（「ノートを開く」と同じになるため）
@@ -1438,7 +1453,15 @@ mark { color: inherit; background-color: transparent; background-image: linear-g
     entries.forEach((e) => { if (e.isIntersecting) show(pages.indexOf(e.target)); });
   }, { rootMargin: "-45% 0px -54% 0px" });
   pages.forEach((p) => po.observe(p));
-  addEventListener("scroll", () => { if (atBottom()) show(pages.length - 1); }, { passive: true });
+  // 左下の番号札が、左端の縦書き見出しの上に重なるあいだは、札をよける（少し下がって消える）
+  const kickers = [...document.querySelectorAll(".kicker")];
+  let tuckRaf = 0;
+  const tuck = () => {
+    tuckRaf = 0;
+    const f = folio.getBoundingClientRect();
+    folio.classList.toggle("tuck", kickers.some((k) => { const r = k.getBoundingClientRect(); return r.left < f.right && r.right > f.left && r.top < f.bottom + 8 && r.bottom > f.top - 8; }));
+  };
+  addEventListener("scroll", () => { if (atBottom()) show(pages.length - 1); if (!tuckRaf) tuckRaf = requestAnimationFrame(tuck); }, { passive: true });
   new IntersectionObserver(([e]) => { coverSeen = e.isIntersecting; sync(); }).observe(opening);
   document.querySelectorAll(".ix a").forEach((a) => a.addEventListener("click", (ev) => {
     const t = document.querySelector(a.getAttribute("href"));
